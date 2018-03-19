@@ -8,6 +8,11 @@ import (
 	"github.com/getblank/blank-sr/sessionstore"
 )
 
+// All returns all registered sessions from sessionstore
+func All() []*sessionstore.Session {
+	return sessionstore.GetAll()
+}
+
 // CheckSession creates a new session in serviceRegistry
 func CheckSession(apiKey string) (string, error) {
 	s, err := sessionstore.GetByAPIKey(apiKey)

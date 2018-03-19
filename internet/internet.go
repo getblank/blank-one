@@ -16,6 +16,7 @@ import (
 	"github.com/getblank/blank-router/taskq"
 	"github.com/getblank/uuid"
 
+	"github.com/getblank/blank-one/appconfig"
 	"github.com/getblank/blank-one/sessions"
 )
 
@@ -81,6 +82,11 @@ func initBaseRoutes() {
 
 	r.With(allowAnyOriginMiddleware).Get("/sso-frame", ssoFrameHandler)
 
+	if nodeEnv := os.Getenv("NODE_ENV"); nodeEnv == "DEV" {
+		r.Post("/config", appconfig.PostConfigHandler)
+		r.Post("/lib", appconfig.PostLibHandler)
+		r.Post("/assets", appconfig.PostAssetsHandler)
+	}
 }
 
 func onlyGet(next http.Handler) http.Handler {

@@ -5,6 +5,8 @@
 *.dylib
 blank-one
 blank.db
+lib.zip
+assets.zip
 
 # Test binary, build with `go test -c`
 *.test

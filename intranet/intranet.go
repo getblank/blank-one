@@ -10,3 +10,11 @@ func Init() {
 func OnEvent(fn func(string, interface{}, []string)) {
 	onEventHandler = fn
 }
+
+func srEventHandler(uri string, subscribers []string, event interface{}) {
+	if len(subscribers) == 0 {
+		return
+	}
+
+	onEventHandler(uri, event, subscribers)
+}

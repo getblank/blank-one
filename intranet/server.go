@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/getblank/blank-one/sr"
 	"github.com/getblank/wango"
 	"golang.org/x/net/websocket"
 
@@ -285,6 +286,8 @@ func runServer() {
 		panic(err)
 	}
 
+	sr.Init(wampServer, srEventHandler)
+
 	s := new(websocket.Server)
 	s.Handshake = func(c *websocket.Config, r *http.Request) error {
 		return nil
@@ -299,7 +302,7 @@ func runServer() {
 		listeningPort = tqPort
 	}
 
-	log.Info("Will listen for connection on port ", listeningPort)
+	log.Info("TaskQueue will listen for connection on port ", listeningPort)
 	err = http.ListenAndServe(":"+listeningPort, nil)
 	if err != nil {
 		panic("ListenAndServe: " + err.Error())

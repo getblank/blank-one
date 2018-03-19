@@ -8,6 +8,7 @@ import (
 
 	"github.com/getblank/blank-one/internet"
 	"github.com/getblank/blank-one/intranet"
+	"github.com/getblank/blank-sr/config"
 )
 
 var (
@@ -27,6 +28,7 @@ func main() {
 	}
 
 	go internet.Init(version)
+	config.Init("./config.json")
 	intranet.Init()
 }
 
