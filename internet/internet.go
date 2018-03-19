@@ -69,6 +69,8 @@ func initBaseRoutes() {
 		w.Write(sessions.PublicKeyBytes())
 	})
 
+	r.Get("/common-settings", commonSettingsHandler)
+
 	r.With(allowAnyOriginMiddleware).Post("/login", loginHandler)
 	r.With(allowAnyOriginMiddleware).Post("/logout", logoutHandler)
 	r.With(allowAnyOriginMiddleware).Get("/logout", logoutHandler)
@@ -81,12 +83,6 @@ func initBaseRoutes() {
 	r.With(allowAnyOriginMiddleware).Options("/check-jwt", checkJWTOptionsHandler)
 
 	r.With(allowAnyOriginMiddleware).Get("/sso-frame", ssoFrameHandler)
-
-	if nodeEnv := os.Getenv("NODE_ENV"); nodeEnv == "DEV" {
-		r.Post("/config", appconfig.PostConfigHandler)
-		r.Post("/lib", appconfig.PostLibHandler)
-		r.Post("/assets", appconfig.PostAssetsHandler)
-	}
 }
 
 func onlyGet(next http.Handler) http.Handler {
@@ -106,7 +102,6 @@ func onlyGet(next http.Handler) http.Handler {
 }
 
 func assetsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("ASSETS"))
 	uriPath := r.URL.Path
 	var uri string
 	assetsRequest := strings.HasPrefix(uriPath, "/app/assets")
@@ -120,16 +115,7 @@ func assetsHandler(w http.ResponseWriter, r *http.Request) {
 		uri += "/index.html"
 	}
 
-	// res, err := http.Get(settings.SRHTTPAddress + uri)
-	// if err != nil {
-	// 	c.Response().WriteHeader(http.StatusNotFound)
-	// 	return err
-	// }
-	// defer res.Body.Close()
-	// c.Response().Header().Set(echo.HeaderContentType, getContentType(uri))
-	// c.Response().WriteHeader(res.StatusCode)
-	// _, err = io.Copy(c.Response(), res.Body)
-	// return err
+	appconfig.GetAsset(w, uri)
 }
 
 func checkJWTHandler(w http.ResponseWriter, r *http.Request) {
@@ -236,6 +222,30 @@ func checkUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, "USER_NOT_FOUND")
+}
+
+func commonSettingsHandler(w http.ResponseWriter, r *http.Request) {
+	t := taskq.Task{
+		Type:      taskq.UserConfig,
+		Arguments: map[string]interface{}{},
+	}
+
+	lang := r.URL.Query().Get("lang")
+	if lang != "" {
+		t.Arguments = map[string]interface{}{
+			"lang": lang,
+		}
+	}
+
+	resChan := taskq.Push(&t)
+
+	res := <-resChan
+	if res.Err != "" {
+		jsonResponseWithStatus(w, http.StatusNotFound, res.Err)
+		return
+	}
+
+	jsonResponse(w, res.Result)
 }
 
 func facebookLoginHandler(w http.ResponseWriter, r *http.Request) {

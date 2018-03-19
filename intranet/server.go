@@ -7,12 +7,16 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/getblank/blank-one/sr"
 	"github.com/getblank/wango"
+	"github.com/go-chi/chi"
 	"golang.org/x/net/websocket"
 
 	"github.com/getblank/blank-router/berrors"
 	"github.com/getblank/blank-router/taskq"
+	"github.com/getblank/blank-sr/registry"
+
+	"github.com/getblank/blank-one/appconfig"
+	"github.com/getblank/blank-one/sr"
 )
 
 const (
@@ -296,15 +300,33 @@ func runServer() {
 	s.Handler = func(ws *websocket.Conn) {
 		wampServer.WampHandler(ws, nil)
 	}
-	http.Handle("/", s)
+	// http.Handle("/", s)
 
 	if tqPort := os.Getenv("BLANK_TASK_QUEUE_PORT"); len(tqPort) > 0 {
 		listeningPort = tqPort
 	}
 
+	r := chi.NewRouter()
+	r.Handle("/", s)
+	if nodeEnv := os.Getenv("NODE_ENV"); nodeEnv == "DEV" {
+		r.Post("/config", appconfig.PostConfigHandler)
+		r.Post("/lib/lib.zip", appconfig.PostLibHandler)
+		r.Post("/assets/assets.zip", appconfig.PostAssetsHandler)
+	}
+
+	r.Get("/lib/", libHandler)
+
 	log.Info("TaskQueue will listen for connection on port ", listeningPort)
-	err = http.ListenAndServe(":"+listeningPort, nil)
+	registry.Register("taskQueue", "ws://127.0.0.1", listeningPort, "0", "")
+
+	err = http.ListenAndServe(":"+listeningPort, r)
 	if err != nil {
 		panic("ListenAndServe: " + err.Error())
+	}
+}
+
+func libHandler(w http.ResponseWriter, r *http.Request) {
+	if _, err := w.Write(appconfig.GetLibZip()); err != nil {
+
 	}
 }

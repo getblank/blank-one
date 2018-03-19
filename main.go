@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -20,6 +21,9 @@ var (
 func main() {
 	// log.SetFormatter(&log.JSONFormatter{})
 	log.SetFormatter(&log.TextFormatter{})
+	if d := os.Getenv("BLANK_DEBUG"); len(d) > 0 {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	showVer := flag.Bool("v", false, "print version and exit")
 	if *showVer {

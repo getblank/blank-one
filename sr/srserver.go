@@ -80,6 +80,7 @@ func publishHandler(c *wango.Conn, _ string, args ...interface{}) (interface{}, 
 	eventHandler(uri, subscribers, args[1])
 	return nil, nil
 }
+
 func registerHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
 	if args == nil {
 		return nil, ErrInvalidArguments

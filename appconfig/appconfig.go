@@ -7,8 +7,10 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"sync"
 
@@ -33,7 +35,7 @@ var (
 	fsLocker sync.RWMutex
 )
 
-func GetAssetsHandler(w http.ResponseWriter, r *http.Request) {
+func GetAsset(w http.ResponseWriter, filePath string) {
 	fsLocker.RLock()
 	if assetsFS == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -42,7 +44,7 @@ func GetAssetsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := vfs.ReadFile(assetsFS, strings.TrimPrefix(r.RequestURI, "/assets"))
+	b, err := vfs.ReadFile(assetsFS, strings.TrimPrefix(filePath, "/assets"))
 	fsLocker.RUnlock()
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -50,12 +52,25 @@ func GetAssetsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	contentType := mime.TypeByExtension(path.Ext(filePath))
+	if len(contentType) == 0 {
+		contentType = http.DetectContentType(b)
+	}
+
+	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
 }
 
 func PostAssetsHandler(rw http.ResponseWriter, request *http.Request) {
 	postLibHandler(rw, request, assetsZipFileName)
+}
+
+func GetLibZip() []byte {
+	fsLocker.RLock()
+	defer fsLocker.RUnlock()
+
+	return libZip[:]
 }
 
 func PostConfigHandler(w http.ResponseWriter, r *http.Request) {
