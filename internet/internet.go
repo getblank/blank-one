@@ -11,6 +11,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"golang.org/x/net/websocket"
 
 	"github.com/getblank/blank-router/berrors"
 	"github.com/getblank/blank-router/taskq"
@@ -70,6 +71,9 @@ func initBaseRoutes() {
 	})
 
 	r.Get("/common-settings", commonSettingsHandler)
+
+	wampInit()
+	r.Handle("/wamp", websocket.Handler(wampHandler))
 
 	r.With(allowAnyOriginMiddleware).Post("/login", loginHandler)
 	r.With(allowAnyOriginMiddleware).Post("/logout", logoutHandler)
