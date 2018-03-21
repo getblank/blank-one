@@ -11,9 +11,11 @@ import (
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 var (
-	headerContentType     = "Content-Type"
-	applicationJavascript = "application/javascript; charset=utf-8"
-	textHTML              = "text/html; charset=utf-8"
+	headerContentType        = "Content-Type"
+	headerContentDisposition = "Content-Disposition"
+	applicationJavascript    = "application/javascript; charset=utf-8"
+	textHTML                 = "text/html; charset=utf-8"
+	applicationXML           = "application/xml; charset=utf-8"
 )
 
 func errorResponse(w http.ResponseWriter, status int, err error) {
@@ -44,6 +46,14 @@ func jsonResponseWithStatus(w http.ResponseWriter, status int, data interface{})
 	}
 }
 
+func jsonBlobResponseWithStatus(w http.ResponseWriter, status int, data []byte) {
+	w.Header().Set(headerContentType, applicationJavascript)
+	w.WriteHeader(status)
+	if _, err := w.Write(data); err != nil {
+
+	}
+}
+
 func htmlResponse(w http.ResponseWriter, data string) {
 	htmlResponseWithStatus(w, http.StatusOK, data)
 }
@@ -57,6 +67,22 @@ func htmlResponseWithStatus(w http.ResponseWriter, status int, data string) {
 }
 
 func redirectResponse(w http.ResponseWriter, location string) {
+	redirectResponseWithStatus(w, http.StatusTemporaryRedirect, location)
+}
+
+func redirectResponseWithStatus(w http.ResponseWriter, status int, location string) {
 	w.Header().Set("Location", location)
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	w.WriteHeader(status)
+}
+
+func xmlResponse(w http.ResponseWriter, data []byte) {
+	xmlResponseWithStatus(w, http.StatusOK, data)
+}
+
+func xmlResponseWithStatus(w http.ResponseWriter, status int, data []byte) {
+	w.Header().Set(headerContentType, applicationXML)
+	w.WriteHeader(status)
+	if _, err := w.Write([]byte(data)); err != nil {
+
+	}
 }

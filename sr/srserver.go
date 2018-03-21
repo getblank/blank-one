@@ -19,6 +19,7 @@ var (
 	eventHandler        = func(string, []string, interface{}) {}
 )
 
+// Init register SR handlers to wamp server
 func Init(wamp *wango.Wango, eh func(string, []string, interface{})) {
 	eventHandler = eh
 	wamp.RegisterSubHandler("registry", registryHandler, nil, nil)
@@ -38,6 +39,11 @@ func Init(wamp *wango.Wango, eh func(string, []string, interface{})) {
 	wamp.RegisterRPCHandler("localStorage.setItem", localStorageSetItemHandler)
 	wamp.RegisterRPCHandler("localStorage.removeItem", localStorageRemoveItemHandler)
 	wamp.RegisterRPCHandler("localStorage.clear", localStorageClearHandler)
+}
+
+// FSAddress returns File Storage address if exists or empty string
+func FSAddress() string {
+	return registry.FSAddress()
 }
 
 func registryHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {

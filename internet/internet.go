@@ -1,9 +1,11 @@
 package internet
 
 import (
+	"mime"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +17,7 @@ import (
 
 	"github.com/getblank/blank-router/berrors"
 	"github.com/getblank/blank-router/taskq"
+	"github.com/getblank/blank-sr/config"
 	"github.com/getblank/uuid"
 
 	"github.com/getblank/blank-one/appconfig"
@@ -33,17 +36,6 @@ func Init(version string) {
 
 	initMiddlewares(version)
 	initBaseRoutes()
-
-	r.Get("/preved", func(w http.ResponseWriter, r *http.Request) {
-		uri := r.URL.Path
-		w.Write([]byte("welcome " + uri))
-	})
-
-	r.Get("/preved/{id}", func(w http.ResponseWriter, r *http.Request) {
-		uri := r.URL.Path
-		id := chi.URLParam(r, "id")
-		w.Write([]byte("parameters " + uri + " " + id))
-	})
 
 	log.Info("Init internet server on port ", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
@@ -87,6 +79,9 @@ func initBaseRoutes() {
 	r.With(allowAnyOriginMiddleware).Options("/check-jwt", checkJWTOptionsHandler)
 
 	r.With(allowAnyOriginMiddleware).Get("/sso-frame", ssoFrameHandler)
+
+	onConfigUpdate(config.Get())
+	config.OnUpdate(onConfigUpdate)
 }
 
 func onlyGet(next http.Handler) http.Handler {
@@ -544,4 +539,12 @@ func sendResetLinkHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, res)
+}
+
+func detectContentType(fileName string, content []byte) string {
+	if ctype := mime.TypeByExtension(filepath.Ext(fileName)); len(ctype) > 0 {
+		return ctype
+	}
+
+	return http.DetectContentType(content)
 }

@@ -300,7 +300,6 @@ func runServer() {
 	s.Handler = func(ws *websocket.Conn) {
 		wampServer.WampHandler(ws, nil)
 	}
-	// http.Handle("/", s)
 
 	if tqPort := os.Getenv("BLANK_TASK_QUEUE_PORT"); len(tqPort) > 0 {
 		listeningPort = tqPort
@@ -327,6 +326,5 @@ func runServer() {
 
 func libHandler(w http.ResponseWriter, r *http.Request) {
 	if _, err := w.Write(appconfig.GetLibZip()); err != nil {
-
 	}
 }

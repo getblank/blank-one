@@ -15,7 +15,7 @@ import (
 var (
 	buildTime string
 	gitHash   string
-	version   = "0.0.0"
+	version   = "0.0.1"
 )
 
 func main() {
@@ -31,8 +31,8 @@ func main() {
 		return
 	}
 
-	go internet.Init(version)
 	config.Init("./config.json")
+	go internet.Init(version)
 	intranet.Init()
 }
 
