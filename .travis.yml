@@ -1,0 +1,22 @@
+language: go
+os:
+  - linux
+go:
+  - 1.10
+script:
+  - go test -v github.com/getblank/blank-one/internet
+after_success:
+  - go build -o blank-one-linux-amd64 -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
+  - GOOS=darwin GOARCH=amd64 go build -o blank-one-darwin-amd64 -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
+  - GOOS=windows GOARCH=amd64 go build -o blank-one-win32-amd64.exe -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
+
+deploy:
+  provider: releases
+  api_key: "$GITHUB_OAUTH_TOKEN"
+  file:
+    - blank-one-linux-amd64
+    - blank-one-darwin-amd64
+    - blank-one-win32-amd64.exe
+  skip_cleanup: true
+  on:
+    tags: true
