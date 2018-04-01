@@ -330,6 +330,10 @@ func extractRequest(r *http.Request) map[string]interface{} {
 }
 
 func defaultResponse(w http.ResponseWriter, res *result) {
+	if res == nil {
+		jsonResponse(w, http.StatusText(http.StatusOK))
+	}
+
 	code := res.Code
 	if code == 0 {
 		code = http.StatusOK
@@ -396,6 +400,10 @@ func responseFile(w http.ResponseWriter, res *result) {
 }
 
 func parseResult(in interface{}) (*result, error) {
+	if in == nil {
+		return nil, nil
+	}
+
 	encoded, err := json.Marshal(in)
 	if err != nil {
 		return nil, errors.Wrap(err, "when parse result")
