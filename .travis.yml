@@ -2,7 +2,7 @@ language: go
 os:
   - linux
 go:
-  - 1.9
+  - "1.10"
 script:
   - go test -v github.com/getblank/blank-one/internet
 after_success:
