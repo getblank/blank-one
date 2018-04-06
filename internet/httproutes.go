@@ -217,8 +217,7 @@ func writeFileFromFileStore(w http.ResponseWriter, storeName, fileID, fileName s
 }
 
 func createHTTPActions(storeName string, actions []config.Action) {
-	groupURI := "/actions/" + storeName + "/"
-	group := r.Route(groupURI, nil)
+	groupURI := fmt.Sprintf("/actions/%s", storeName)
 	for _, v := range actions {
 		actionID := v.ID
 		handler := func(w http.ResponseWriter, r *http.Request) {
@@ -270,9 +269,9 @@ func createHTTPActions(storeName string, actions []config.Action) {
 		}
 
 		if v.Type == "http" {
-			group.With(jwtAuthMiddleware(false)).Get(actionID, handler)
+			r.With(jwtAuthMiddleware(false)).Get(fmt.Sprintf("%s/%s", groupURI, v.ID), handler)
 		} else {
-			group.With(jwtAuthMiddleware(false)).Post(actionID, handler)
+			r.With(jwtAuthMiddleware(false)).Get(fmt.Sprintf("%s/%s", groupURI, v.ID), handler)
 		}
 
 		log.Infof("Registered httpAction for store '%s' with path %s", storeName, groupURI+v.ID)

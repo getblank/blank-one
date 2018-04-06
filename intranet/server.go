@@ -320,7 +320,7 @@ func runServer() {
 
 	err = http.ListenAndServe(":"+listeningPort, r)
 	if err != nil {
-		panic("ListenAndServe: " + err.Error())
+		log.Fatalf("ListenAndServe: %v", err)
 	}
 }
 

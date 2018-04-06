@@ -13,13 +13,13 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 var (
 	headerContentType        = "Content-Type"
 	headerContentDisposition = "Content-Disposition"
-	applicationJavascript    = "application/javascript; charset=utf-8"
+	applicationJSON          = "application/json; charset=utf-8"
 	textHTML                 = "text/html; charset=utf-8"
 	applicationXML           = "application/xml; charset=utf-8"
 )
 
 func errorResponse(w http.ResponseWriter, status int, err error) {
-	w.Header().Set(headerContentType, applicationJavascript)
+	w.Header().Set(headerContentType, applicationJSON)
 	w.WriteHeader(status)
 	w.Write([]byte(`"` + err.Error() + `"`))
 }
@@ -39,7 +39,7 @@ func jsonResponseWithStatus(w http.ResponseWriter, status int, data interface{})
 		return
 	}
 
-	w.Header().Set(headerContentType, applicationJavascript)
+	w.Header().Set(headerContentType, applicationJSON)
 	w.WriteHeader(status)
 	if _, err := w.Write(encoded); err != nil {
 
@@ -47,7 +47,7 @@ func jsonResponseWithStatus(w http.ResponseWriter, status int, data interface{})
 }
 
 func jsonBlobResponseWithStatus(w http.ResponseWriter, status int, data []byte) {
-	w.Header().Set(headerContentType, applicationJavascript)
+	w.Header().Set(headerContentType, applicationJSON)
 	w.WriteHeader(status)
 	if _, err := w.Write(data); err != nil {
 

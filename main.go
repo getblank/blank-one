@@ -25,7 +25,12 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
+	if j := os.Getenv("BLANK_JSON_LOGGING"); len(j) > 0 {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
+
 	showVer := flag.Bool("v", false, "print version and exit")
+	flag.Parse()
 	if *showVer {
 		printVersion()
 		return

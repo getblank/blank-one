@@ -193,7 +193,7 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 		}
 
 		var query map[string]interface{}
-		if q := chi.URLParam(r, "query"); len(q) > 0 {
+		if q := r.URL.Query().Get("query"); len(q) > 0 {
 			err := json.Unmarshal([]byte(q), &query)
 			if err != nil {
 				errorResponse(w, http.StatusBadRequest, err)
@@ -202,7 +202,7 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 		}
 
 		findQuery := map[string]interface{}{"query": query, "skip": 0, "take": 10}
-		if s := chi.URLParam(r, "skip"); len(s) > 0 {
+		if s := r.URL.Query().Get("skip"); len(s) > 0 {
 			var skip int
 			skip, err := strconv.Atoi(s)
 			if err != nil {
@@ -213,7 +213,7 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 			findQuery["skip"] = skip
 		}
 
-		if t := chi.URLParam(r, "take"); len(t) > 0 {
+		if t := r.URL.Query().Get("take"); len(t) > 0 {
 			var take int
 			take, err := strconv.Atoi(t)
 			if err != nil {
@@ -224,7 +224,7 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 			findQuery["take"] = take
 		}
 
-		if orderBy := chi.URLParam(r, "orderBy"); len(orderBy) > 0 {
+		if orderBy := r.URL.Query().Get("orderBy"); len(orderBy) > 0 {
 			findQuery["orderBy"] = orderBy
 		}
 
