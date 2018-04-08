@@ -14,11 +14,12 @@ import (
 	"strings"
 	"sync"
 
-	log "github.com/Sirupsen/logrus"
 	"golang.org/x/tools/godoc/vfs"
 	"golang.org/x/tools/godoc/vfs/zipfs"
 
 	"github.com/getblank/blank-sr/config"
+
+	"github.com/getblank/blank-one/logging"
 )
 
 const (
@@ -33,6 +34,8 @@ var (
 	assetsFS vfs.FileSystem
 	libZip   []byte
 	fsLocker sync.RWMutex
+
+	log = logging.Logger()
 )
 
 func GetAsset(w http.ResponseWriter, filePath string) {
@@ -110,13 +113,13 @@ func PostLibHandler(rw http.ResponseWriter, request *http.Request) {
 func makeLibFS() {
 	lib, err := ioutil.ReadFile(libZipFileName)
 	if err != nil {
-		log.WithError(err).Warn("No lib.zip file found")
+		log.Warnf("No lib.zip file found, error: %v", err)
 		return
 	}
 
 	zr, err := zip.NewReader(bytes.NewReader(lib), int64(len(lib)))
 	if err != nil {
-		log.WithError(err).Error("Can't make zip.Reader from lib.zip file ")
+		log.Errorf("Can't make zip.Reader from lib.zip file, error: %v", err)
 		return
 	}
 	rc := &zip.ReadCloser{
@@ -131,12 +134,12 @@ func makeLibFS() {
 func makeAssetsFS() {
 	lib, err := ioutil.ReadFile(assetsZipFileName)
 	if err != nil {
-		log.WithError(err).Warn("No assets.zip file found")
+		log.Warnf("No assets.zip file found, error: %v", err)
 		return
 	}
 	zr, err := zip.NewReader(bytes.NewReader(lib), int64(len(lib)))
 	if err != nil {
-		log.WithError(err).Error("Can't make zip.Reader from assets.zip file ")
+		log.Errorf("Can't make zip.Reader from assets.zip file, error: %v", err)
 		return
 	}
 

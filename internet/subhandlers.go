@@ -1,8 +1,6 @@
 package internet
 
 import (
-	log "github.com/Sirupsen/logrus"
-
 	"github.com/getblank/blank-router/berrors"
 	"github.com/getblank/blank-router/taskq"
 	"github.com/getblank/wango"
@@ -17,7 +15,7 @@ func subUserHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}
 	}
 	cred, ok := extra.(credentials)
 	if !ok {
-		log.WithField("extra", extra).Warn("Invalid type of extra on connection when sub com.user handler")
+		log.Warn("Invalid type of extra on connection when sub com.user handler")
 		return nil, berrors.ErrError
 	}
 	t := taskq.Task{
@@ -74,7 +72,7 @@ func subStoresHandler(c *wango.Conn, uri string, args ...interface{}) (interface
 	}
 	cred, ok := extra.(credentials)
 	if !ok {
-		log.WithField("extra", extra).Warn("Invalid type of extra on connection when sub stores handler")
+		log.Warn("Invalid type of extra on connection when sub stores handler")
 		return nil, berrors.ErrError
 	}
 
@@ -92,7 +90,7 @@ func unsubStoresHandler(c *wango.Conn, uri string, args ...interface{}) (interfa
 	}
 	cred, ok := extra.(credentials)
 	if !ok {
-		log.WithField("extra", extra).Warn("Invalid type of extra on connection when unsub stores handler")
+		log.Warn("Invalid type of extra on connection when unsub stores handler")
 		return nil, berrors.ErrError
 	}
 	return nil, sessions.DeleteSubscription(cred.sessionID, c.ID(), uri)

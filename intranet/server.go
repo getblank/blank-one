@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/getblank/wango"
 	"github.com/go-chi/chi"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
 
 	"github.com/getblank/blank-router/berrors"

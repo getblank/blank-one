@@ -3,12 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-
-	log "github.com/Sirupsen/logrus"
 
 	"github.com/getblank/blank-one/internet"
 	"github.com/getblank/blank-one/intranet"
+	"github.com/getblank/blank-one/logging"
+	_ "github.com/getblank/blank-one/scheduler"
 	"github.com/getblank/blank-sr/config"
 )
 
@@ -18,17 +17,9 @@ var (
 	version   = "0.0.4"
 )
 
+var log = logging.Logger()
+
 func main() {
-	// log.SetFormatter(&log.JSONFormatter{})
-	log.SetFormatter(&log.TextFormatter{})
-	if d := os.Getenv("BLANK_DEBUG"); len(d) > 0 {
-		log.SetLevel(log.DebugLevel)
-	}
-
-	if j := os.Getenv("BLANK_JSON_LOGGING"); len(j) > 0 {
-		log.SetFormatter(&log.JSONFormatter{})
-	}
-
 	showVer := flag.Bool("v", false, "print version and exit")
 	flag.Parse()
 	if *showVer {

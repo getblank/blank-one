@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"golang.org/x/net/websocket"
@@ -21,12 +20,14 @@ import (
 	"github.com/getblank/uuid"
 
 	"github.com/getblank/blank-one/appconfig"
+	"github.com/getblank/blank-one/logging"
 	"github.com/getblank/blank-one/sessions"
 )
 
 var (
 	port = "8080"
 	r    = chi.NewRouter()
+	log  = logging.Logger()
 )
 
 func Init(version string) {
@@ -266,7 +267,7 @@ func facebookLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := res.(map[string]interface{})
 	if !ok {
-		log.WithField("result", res).Warn("Invalid type of result on http login")
+		log.Warn("Invalid type of result on http login")
 		htmlResponseWithStatus(w, http.StatusInternalServerError, berrors.ErrError.Error())
 		return
 	}
@@ -355,7 +356,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := res.(map[string]interface{})
 	if !ok {
-		log.WithField("result", res).Warn("Invalid type of result on http login")
+		log.Warn("Invalid type of result on http login")
 		errorResponse(w, http.StatusInternalServerError, berrors.ErrError)
 		return
 	}

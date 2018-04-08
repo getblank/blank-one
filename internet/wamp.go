@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"golang.org/x/net/websocket"
 
 	"github.com/getblank/blank-router/berrors"
@@ -133,13 +132,13 @@ func sessionCloseCallback(c *wango.Conn) {
 	}
 	cred, ok := extra.(credentials)
 	if !ok {
-		log.WithField("extra", extra).Warn("Invalid type of extra on session close")
+		log.Warn("Invalid type of extra on session close")
 		return
 	}
-	log.WithFields(log.Fields{"connId": c.ID(), "apiKey": cred.sessionID, "userId": cred.userID}).Info("User disconnected")
+	log.Infof("User id: %s disconnected", cred.userID)
 	err := sessions.DeleteConnection(cred.sessionID, c.ID())
 	if err != nil {
-		log.WithError(err).Error("Can't delete connection when session closed")
+		log.Errorf("Can't delete connection when session closed, error: %v", err)
 	}
 }
 
@@ -160,7 +159,7 @@ func actionHandler(c *wango.Conn, uri string, args ...interface{}) (interface{},
 	if extra != nil {
 		cred, ok := extra.(credentials)
 		if !ok {
-			log.WithField("extra", extra).Warn("Invalid type of extra on connection when rpx handler")
+			log.Warn("Invalid type of extra on connection when rpx handler")
 			return nil, berrors.ErrError
 		}
 		_, err := sessions.CheckSession(cred.sessionID)
@@ -275,7 +274,7 @@ func signOutHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}
 	}
 	cred, ok := extra.(credentials)
 	if !ok {
-		log.WithField("extra", extra).Warn("Extra is invalid type")
+		log.Warn("Extra is invalid type")
 		return nil, berrors.ErrError
 	}
 	err := sessions.DeleteSession(cred.sessionID)
@@ -320,7 +319,7 @@ func rgxRPCHandler(c *wango.Conn, uri string, args ...interface{}) (interface{},
 	if extra != nil {
 		cred, ok := extra.(credentials)
 		if !ok {
-			log.WithField("extra", extra).Warn("Invalid type of extra on connection when rpx handler")
+			log.Warn("Invalid type of extra on connection when rpx handler")
 			return nil, berrors.ErrError
 		}
 		_, err := sessions.CheckSession(cred.sessionID)

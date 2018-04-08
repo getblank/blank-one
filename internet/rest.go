@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/go-chi/chi"
 
 	"github.com/getblank/blank-router/berrors"
@@ -31,13 +30,13 @@ func createRESTAPI(httpEnabledStores []config.Store) {
 
 	res, err := taskq.PushAndGetResult(&t, 0)
 	if err != nil {
-		log.WithError(err).Errorf("Can't compile REST docs, error: %v", err)
+		log.Errorf("Can't compile REST docs, error: %v", err)
 		return
 	}
 
 	html, ok := res.(string)
 	if !ok {
-		log.WithField("html", res).Error("Invalid response type from doc compiler")
+		log.Error("Invalid response type from doc compiler")
 		return
 	}
 
@@ -59,52 +58,52 @@ func createRESTAPIForStore(store config.Store) {
 
 	r := r.With(allowAnyOriginMiddleware, jwtAuthMiddleware(false))
 	r.Get(baseURI, restGetAllDocumentsHandler(store.Store))
-	log.WithFields(log.Fields{"store": store.Store}).Debugf("Created GET all REST method %s", baseURI)
+	log.Debugf("Created GET all REST method %s", baseURI)
 
 	if baseURI != lowerBaseURI {
 		r.Get(lowerBaseURI, restGetAllDocumentsHandler(store.Store))
-		log.WithFields(log.Fields{"store": store.Store}).Debugf("Created GET all REST method %s", lowerBaseURI)
+		log.Debugf("Created GET all REST method %s", lowerBaseURI)
 	}
 
 	r.Post(baseURI, restPostDocumentHandler(store.Store))
-	log.WithFields(log.Fields{"store": store.Store}).Debugf("Created POST REST method %s", baseURI)
+	log.Debugf("Created POST REST method %s", baseURI)
 
 	if baseURI != lowerBaseURI {
 		r.Post(lowerBaseURI, restPostDocumentHandler(store.Store))
-		log.WithFields(log.Fields{"store": store.Store}).Debugf("Created POST REST method %s", lowerBaseURI)
+		log.Debugf("Created POST REST method %s", lowerBaseURI)
 	}
 
 	itemURI := baseURI + "/{id}"
 	lowerItemURI := lowerBaseURI + "/{id}"
 	r.Get(itemURI, restGetDocumentHandler(store.Store))
-	log.WithFields(log.Fields{"store": store.Store}).Debugf("Created GET REST method %s", itemURI)
+	log.Debugf("Created GET REST method %s", itemURI)
 	if itemURI != lowerItemURI {
 		r.Get(lowerItemURI, restGetDocumentHandler(store.Store))
-		log.WithFields(log.Fields{"store": store.Store}).Debugf("Created GET REST method %s", lowerItemURI)
+		log.Debugf("Created GET REST method %s", lowerItemURI)
 	}
 
 	r.Put(itemURI, restPutDocumentHandler(store.Store))
-	log.WithFields(log.Fields{"store": store.Store}).Debugf("Created PUT REST method %s", itemURI)
+	log.Debugf("Created PUT REST method %s", itemURI)
 	if itemURI != lowerItemURI {
 		r.Put(lowerItemURI, restPutDocumentHandler(store.Store))
-		log.WithFields(log.Fields{"store": store.Store}).Debugf("Created PUT REST method %s", lowerItemURI)
+		log.Debugf("Created PUT REST method %s", lowerItemURI)
 	}
 
 	r.Delete(itemURI, restDeleteDocumentHandler(store.Store))
-	log.WithFields(log.Fields{"store": store.Store}).Debugf("Created DELETE REST method %s", itemURI)
+	log.Debugf("Created DELETE REST method %s", itemURI)
 	if itemURI != lowerItemURI {
 		r.Delete(lowerItemURI, restDeleteDocumentHandler(store.Store))
-		log.WithFields(log.Fields{"store": store.Store}).Debugf("Created DELETE REST method %s", lowerItemURI)
+		log.Debugf("Created DELETE REST method %s", lowerItemURI)
 	}
 
 	for _, a := range store.Actions {
 		actionURI := itemURI + "/" + a.ID
 		lowerActionURI := lowerItemURI + "/" + strings.ToLower(a.ID)
 		r.Post(actionURI, restActionHandler(store.Store, a.ID))
-		log.WithFields(log.Fields{"store": store.Store}).Debugf("Created POST action REST method %s", actionURI)
+		log.Debugf("Created POST action REST method %s", actionURI)
 		if actionURI != lowerActionURI {
 			r.Post(lowerActionURI, restActionHandler(store.Store, a.ID))
-			log.WithFields(log.Fields{"store": store.Store}).Debugf("Created POST action REST method %s", lowerActionURI)
+			log.Debugf("Created POST action REST method %s", lowerActionURI)
 		}
 	}
 
@@ -112,10 +111,10 @@ func createRESTAPIForStore(store config.Store) {
 		actionURI := baseURI + "/" + a.ID
 		lowerActionURI := lowerBaseURI + "/" + strings.ToLower(a.ID)
 		r.Post(actionURI, restActionHandler(store.Store, a.ID))
-		log.WithFields(log.Fields{"store": store.Store}).Debugf("Created POST storeAction REST method %s", actionURI)
+		log.Debugf("Created POST storeAction REST method %s", actionURI)
 		if actionURI != lowerActionURI {
 			r.Post(lowerActionURI, restActionHandler(store.Store, a.ID))
-			log.WithFields(log.Fields{"store": store.Store}).Debugf("Created POST storeAction REST method %s", lowerActionURI)
+			log.Debugf("Created POST storeAction REST method %s", lowerActionURI)
 		}
 	}
 }

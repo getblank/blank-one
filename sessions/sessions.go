@@ -3,10 +3,12 @@ package sessions
 import (
 	"crypto/rsa"
 
-	log "github.com/Sirupsen/logrus"
-
 	"github.com/getblank/blank-sr/sessionstore"
+
+	"github.com/getblank/blank-one/logging"
 )
+
+var log = logging.Logger()
 
 // All returns all registered sessions from sessionstore
 func All() []*sessionstore.Session {

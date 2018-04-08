@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/go-chi/chi"
 	"github.com/pkg/errors"
 
