@@ -43,6 +43,12 @@ func updateScheduler(storeName string, tasks []*config.Task) {
 	c := cron.New()
 	for i := range tasks {
 		t := tasks[i]
+		switch t.Schedule {
+		case "@reboot", "@startup", "@start":
+			go runTask(storeName, i, false)
+			continue
+		}
+
 		index := i
 		err := c.AddFunc(t.Schedule, func() {
 			runTask(storeName, index, t.AllowConcurrent)
