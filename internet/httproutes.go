@@ -330,6 +330,7 @@ func extractRequest(r *http.Request) map[string]interface{} {
 func defaultResponse(w http.ResponseWriter, res *result) {
 	if res == nil {
 		jsonResponse(w, http.StatusText(http.StatusOK))
+		return
 	}
 
 	code := res.Code
