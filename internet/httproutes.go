@@ -270,7 +270,7 @@ func createHTTPActions(storeName string, actions []config.Action) {
 		if v.Type == "http" {
 			r.With(jwtAuthMiddleware(false)).Get(fmt.Sprintf("%s/%s", groupURI, v.ID), handler)
 		} else {
-			r.With(jwtAuthMiddleware(false)).Get(fmt.Sprintf("%s/%s", groupURI, v.ID), handler)
+			r.With(jwtAuthMiddleware(false)).Post(fmt.Sprintf("%s/%s", groupURI, v.ID), handler)
 		}
 
 		log.Infof("Registered httpAction for store '%s' with path %s", storeName, groupURI+v.ID)
