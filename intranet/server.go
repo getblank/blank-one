@@ -8,14 +8,15 @@ import (
 
 	"github.com/getblank/wango"
 	"github.com/go-chi/chi"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
 
 	"github.com/getblank/blank-router/berrors"
 	"github.com/getblank/blank-router/taskq"
+	"github.com/getblank/blank-sr/config"
 	"github.com/getblank/blank-sr/registry"
 
 	"github.com/getblank/blank-one/appconfig"
+	"github.com/getblank/blank-one/logging"
 	"github.com/getblank/blank-one/sr"
 )
 
@@ -30,6 +31,7 @@ const (
 
 var (
 	wampServer           = wango.New()
+	log                  = logging.Logger()
 	taskWatchChan        = make(chan taskKeeper, 1000)
 	workerConnectChan    = make(chan string)
 	workerDisconnectChan = make(chan string)
@@ -59,13 +61,13 @@ func taskGetHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}
 
 func taskDoneHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
 	if len(args) < 2 {
-		log.WithField("argumentsLength", len(args)).Warn("Invalid task.done RPC")
+		log.Warn("Invalid task.done RPC")
 		return nil, berrors.ErrInvalidArguments
 	}
 
 	id, ok := args[0].(float64)
 	if !ok {
-		log.WithField("taskId", args[0]).Warn("Invalid task.id in task.done RPC")
+		log.Warnf("Invalid task.id %v in task.done RPC", args[0])
 		return nil, berrors.ErrInvalidArguments
 	}
 
@@ -84,19 +86,19 @@ func taskDoneHandler(c *wango.Conn, uri string, args ...interface{}) (interface{
 
 func taskErrorHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
 	if len(args) < 2 {
-		log.WithField("argumentsLength", len(args)).Warn("Invalid task.error RPC")
+		log.Warn("Invalid task.error RPC")
 		return nil, berrors.ErrInvalidArguments
 	}
 
 	id, ok := args[0].(float64)
 	if !ok {
-		log.WithField("taskId", args[0]).Warn("Invalid task.id in task.error RPC")
+		log.Warnf("Invalid task.id %v in task.done RPC", args[0])
 		return nil, berrors.ErrInvalidArguments
 	}
 
 	err, ok := args[1].(string)
 	if !ok {
-		log.WithField("error", args[1]).Warn("Invalid description in task.error RPC")
+		log.Warn("Invalid description in task.error RPC")
 		return nil, berrors.ErrInvalidArguments
 	}
 
@@ -114,19 +116,19 @@ func taskErrorHandler(c *wango.Conn, uri string, args ...interface{}) (interface
 
 func cronRunHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
 	if len(args) < 2 {
-		log.WithField("argumentsLength", len(args)).Warn("Invalid cron.run RPC")
+		log.Warn("Invalid cron.run RPC")
 		return nil, berrors.ErrInvalidArguments
 	}
 
 	storeName, ok := args[0].(string)
 	if !ok {
-		log.WithField("storeName", args[0]).Warn("Invalid storeName when cron.run RPC")
+		log.Warn("Invalid storeName when cron.run RPC")
 		return nil, berrors.ErrInvalidArguments
 	}
 
 	index, ok := args[1].(float64)
 	if !ok {
-		log.WithField("index", args[1]).Warn("Invalid task index when cron.run RPC")
+		log.Warn("Invalid task index when cron.run RPC")
 		return nil, berrors.ErrInvalidArguments
 	}
 
@@ -182,7 +184,7 @@ func publishHandler(c *wango.Conn, _uri string, args ...interface{}) (interface{
 	for k, v := range _subscribers {
 		connID, ok := v.(string)
 		if !ok {
-			log.WithField("connID", connID).Warn("ConnID is not a string in 'publish' RPC call")
+			log.Warn("ConnID is not a string in 'publish' RPC call")
 			continue
 		}
 		subscribers[k] = connID
@@ -259,6 +261,10 @@ func runServer() {
 
 	wampServer.SetSessionOpenCallback(internalOpenCallback)
 	wampServer.SetSessionCloseCallback(internalCloseCallback)
+
+	config.OnUpdate(func(c map[string]config.Store) {
+		wampServer.Publish("config", c)
+	})
 
 	err := wampServer.RegisterRPCHandler(getTaskURI, taskGetHandler)
 	if err != nil {
