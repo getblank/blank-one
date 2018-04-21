@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"mime"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -140,7 +141,7 @@ func onConfigUpdate(c map[string]config.Store) {
 					return
 				}
 
-				defaultResponse(w, res)
+				defaultResponse(w, r, res)
 			}
 
 			handler(hook.URI, hookHandler)
@@ -264,7 +265,7 @@ func createHTTPActions(storeName string, actions []config.Action) {
 				return
 			}
 
-			defaultResponse(w, res)
+			defaultResponse(w, r, res)
 		}
 
 		if v.Type == "http" {
@@ -327,7 +328,7 @@ func extractRequest(r *http.Request) map[string]interface{} {
 	}
 }
 
-func defaultResponse(w http.ResponseWriter, res *result) {
+func defaultResponse(w http.ResponseWriter, r *http.Request, res *result) {
 	if res == nil {
 		jsonResponse(w, http.StatusText(http.StatusOK))
 		return
@@ -365,7 +366,7 @@ func defaultResponse(w http.ResponseWriter, res *result) {
 		xmlResponseWithStatus(w, code, []byte(res.Data))
 		return
 	case "file":
-		responseFile(w, res)
+		responseFile(w, r, res)
 		return
 	default:
 		jsonResponseWithStatus(w, http.StatusSeeOther, "unknown encoding type")
@@ -373,28 +374,44 @@ func defaultResponse(w http.ResponseWriter, res *result) {
 	}
 }
 
-func responseFile(w http.ResponseWriter, res *result) {
+func responseFile(w http.ResponseWriter, r *http.Request, res *result) {
 	if len(res.Store) > 0 && len(res.ID) > 0 {
 		writeFileFromFileStore(w, res.Store, res.ID, res.FileName)
 		return
 	}
 
-	var buffer []byte
-	var err error
 	if len(res.FilePath) > 0 {
-		buffer, err = ioutil.ReadFile(res.FilePath)
-	} else {
-		buffer, err = base64.StdEncoding.DecodeString(res.Data)
+		fileName := res.FileName
+		if len(fileName) == 0 {
+			fileName = filepath.Base(res.FilePath)
+		}
+
+		if len(w.Header().Get(headerContentDisposition)) == 0 {
+			w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", res.FileName))
+		}
+
+		http.ServeFile(w, r, res.FilePath)
+
+		return
 	}
+
+	var content []byte
+	var err error
+	content, err = base64.StdEncoding.DecodeString(res.Data)
 
 	if err != nil {
 		jsonResponseWithStatus(w, http.StatusInternalServerError, fmt.Sprintf("can't read file, error: %v", err))
 		return
 	}
 
-	w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", res.FileName))
-	w.Header().Set(headerContentType, detectContentType(res.FileName, buffer))
-	if _, err := w.Write(buffer); err != nil {
+	if len(w.Header().Get(headerContentDisposition)) == 0 {
+		w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", res.FileName))
+	}
+	if len(w.Header().Get(headerContentType)) == 0 {
+		w.Header().Set(headerContentType, detectContentType(res.FileName, content))
+	}
+
+	if _, err := w.Write(content); err != nil {
 	}
 }
 
