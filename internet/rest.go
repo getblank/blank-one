@@ -320,7 +320,7 @@ func restPostDocumentHandler(storeName string) http.HandlerFunc {
 		}
 
 		var item map[string]interface{}
-		if err := json.NewDecoder(r.Body).Decode(item); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 			errorResponse(w, http.StatusBadRequest, err)
 			return
 		}
@@ -380,7 +380,7 @@ func restPutDocumentHandler(storeName string) http.HandlerFunc {
 		}
 
 		var item map[string]interface{}
-		if err := json.NewDecoder(r.Body).Decode(item); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 			errorResponse(w, http.StatusBadRequest, err)
 			return
 		}
