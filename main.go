@@ -14,7 +14,7 @@ import (
 var (
 	buildTime string
 	gitHash   string
-	version   = "0.0.11"
+	version   = "0.0.12"
 )
 
 var log = logging.Logger()
