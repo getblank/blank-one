@@ -67,6 +67,7 @@ func GetAsset(w http.ResponseWriter, filePath string) {
 
 func PostAssetsHandler(rw http.ResponseWriter, request *http.Request) {
 	postLibHandler(rw, request, assetsZipFileName)
+	makeAssetsFS()
 }
 
 func GetLibZip() []byte {
@@ -108,6 +109,7 @@ func PostConfigHandler(w http.ResponseWriter, r *http.Request) {
 
 func PostLibHandler(rw http.ResponseWriter, request *http.Request) {
 	postLibHandler(rw, request, libZipFileName)
+	makeLibFS()
 }
 
 func makeLibFS() {
