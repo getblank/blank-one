@@ -173,7 +173,7 @@ func checkUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	form := r.PostForm
 	email := form.Get("email")
-	if email == "" {
+	if len(email) == 0 {
 		invalidArguments(w)
 		return
 	}
@@ -522,7 +522,7 @@ func sendResetLinkHandler(w http.ResponseWriter, r *http.Request) {
 
 	formParams := r.PostForm
 	email := formParams.Get("email")
-	if email == "" {
+	if len(email) == 0 {
 		invalidArguments(w)
 		return
 	}

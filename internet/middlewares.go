@@ -30,7 +30,7 @@ func jwtAuthMiddleware(allowGuests bool) func(http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			accessToken := extractToken(r)
-			if accessToken == "" {
+			if len(accessToken) == 0 {
 				if allowGuests {
 					ctx = context.WithValue(ctx, credKey, credentials{userID: "guest"})
 					next.ServeHTTP(w, r.WithContext(ctx))

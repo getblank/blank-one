@@ -103,7 +103,7 @@ func registerHandler(c *wango.Conn, uri string, args ...interface{}) (interface{
 	}
 
 	typ, ok := _type.(string)
-	if !ok || typ == "" {
+	if !ok || len(typ) == 0 {
 		return nil, errors.New("Invalid register message. No type")
 	}
 

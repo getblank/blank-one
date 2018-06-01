@@ -488,7 +488,7 @@ func postFileHandler(storeName string) func(http.ResponseWriter, *http.Request) 
 		}
 
 		fileID := chi.URLParam(r, "id")
-		if fileID == "" {
+		if len(fileID) == 0 {
 			fileID = uuid.NewV4()
 		}
 
