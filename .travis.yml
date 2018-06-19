@@ -4,9 +4,9 @@ os:
 go:
   - "1.10"
 install:
-script:
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s latest
-  - golangci-lint run
+script:
+  # - golangci-lint run
   - go test -v github.com/getblank/blank-one/internet
 after_success:
   - go build -o blank-one-linux-amd64 -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
