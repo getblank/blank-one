@@ -22,23 +22,47 @@ var (
 // Init register SR handlers to wamp server
 func Init(wamp *wango.Wango, eh func(string, []string, interface{})) {
 	eventHandler = eh
-	wamp.RegisterSubHandler("registry", registryHandler, nil, nil)
-	wamp.RegisterSubHandler("config", configHandler, nil, nil)
-	wamp.RegisterSubHandler("sessions", subSessionsHandler, nil, nil)
-	wamp.RegisterSubHandler("events", nil, nil, nil)
-	wamp.RegisterSubHandler("users", nil, nil, nil)
+	if err := wamp.RegisterSubHandler("registry", registryHandler, nil, nil); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterSubHandler("config", configHandler, nil, nil); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterSubHandler("sessions", subSessionsHandler, nil, nil); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterSubHandler("events", nil, nil, nil); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterSubHandler("users", nil, nil, nil); err != nil {
+		panic(err)
+	}
 
-	wamp.RegisterRPCHandler("register", registerHandler)
-	wamp.RegisterRPCHandler("publish", publishHandler)
+	if err := wamp.RegisterRPCHandler("register", registerHandler); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterRPCHandler("sync.lock", syncLockHandler); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterRPCHandler("sync.unlock", syncUnlockHandler); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterRPCHandler("sync.once", syncOnceHandler); err != nil {
+		panic(err)
+	}
 
-	wamp.RegisterRPCHandler("sync.lock", syncLockHandler)
-	wamp.RegisterRPCHandler("sync.unlock", syncUnlockHandler)
-	wamp.RegisterRPCHandler("sync.once", syncOnceHandler)
-
-	wamp.RegisterRPCHandler("localStorage.getItem", localStorageGetItemHandler)
-	wamp.RegisterRPCHandler("localStorage.setItem", localStorageSetItemHandler)
-	wamp.RegisterRPCHandler("localStorage.removeItem", localStorageRemoveItemHandler)
-	wamp.RegisterRPCHandler("localStorage.clear", localStorageClearHandler)
+	if err := wamp.RegisterRPCHandler("localStorage.getItem", localStorageGetItemHandler); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterRPCHandler("localStorage.setItem", localStorageSetItemHandler); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterRPCHandler("localStorage.removeItem", localStorageRemoveItemHandler); err != nil {
+		panic(err)
+	}
+	if err := wamp.RegisterRPCHandler("localStorage.clear", localStorageClearHandler); err != nil {
+		panic(err)
+	}
 }
 
 // FSAddress returns File Storage address if exists or empty string
@@ -59,32 +83,6 @@ func subSessionsHandler(c *wango.Conn, uri string, args ...interface{}) (interfa
 func configHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
 	conf := config.Get()
 	return conf, nil
-}
-
-// args: uri string, event interface{}, subscribers array of connIDs
-// This data will be transferred sent as event on "events" topic
-func publishHandler(c *wango.Conn, _ string, args ...interface{}) (interface{}, error) {
-	uri, ok := args[0].(string)
-	if !ok {
-		return nil, ErrInvalidArguments
-	}
-
-	subs, ok := args[2].([]interface{})
-	if !ok {
-		return nil, ErrInvalidArguments
-	}
-
-	subscribers := make([]string, 0, len(subs))
-	for i, v := range subs {
-		if s, ok := v.(string); ok {
-			subscribers[i] = s
-		} else {
-			return nil, ErrInvalidArguments
-		}
-	}
-
-	eventHandler(uri, subscribers, args[1])
-	return nil, nil
 }
 
 func registerHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
@@ -121,17 +119,15 @@ func registerHandler(c *wango.Conn, uri string, args ...interface{}) (interface{
 
 	var port string
 	if _port, ok := mes["port"]; ok {
-		port, ok = _port.(string)
+		port, _ = _port.(string)
 	}
 
 	var commonJS string
 	if _commonJS, ok := mes["commonJS"]; ok {
-		commonJS, ok = _commonJS.(string)
+		commonJS, _ = _commonJS.(string)
 	}
 
-	registry.Register(typ, remoteAddr, port, c.ID(), commonJS)
-
-	return nil, nil
+	return registry.Register(typ, remoteAddr, port, c.ID(), commonJS)
 }
 
 func localStorageGetItemHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {

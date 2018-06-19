@@ -26,7 +26,6 @@ const apiV1baseURI = "/api/v1/"
 
 var (
 	routesBuildingCompleted bool
-	errUserIDNotFound       = errors.New("not found")
 	paramConverterRGX       = regexp.MustCompile(":([a-zA-Z]+[a-zA-Z0-9]*)")
 )
 
@@ -212,7 +211,7 @@ func writeFileFromFileStore(w http.ResponseWriter, storeName, fileID, fileName s
 	w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", fileName))
 	body, _ := ioutil.ReadAll(res.Body)
 	if _, err := w.Write(body); err != nil {
-
+		log.Errorf("[writeFileFromFileStore] write error: %v", err)
 	}
 }
 
@@ -295,6 +294,7 @@ func extractRequest(r *http.Request) map[string]interface{} {
 
 	if err := r.ParseMultipartForm(1024); err != nil {
 		if err := r.ParseForm(); err != nil {
+			log.Debugf("[extractRequest] extract form data error: %v", err)
 		}
 	}
 
@@ -387,7 +387,7 @@ func responseFile(w http.ResponseWriter, r *http.Request, res *result) {
 		}
 
 		if len(w.Header().Get(headerContentDisposition)) == 0 {
-			w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", res.FileName))
+			w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", fileName))
 		}
 
 		http.ServeFile(w, r, res.FilePath)
@@ -412,6 +412,7 @@ func responseFile(w http.ResponseWriter, r *http.Request, res *result) {
 	}
 
 	if _, err := w.Write(content); err != nil {
+		log.Debugf("[responseFile] write error: %v", err)
 	}
 }
 

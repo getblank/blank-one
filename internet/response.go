@@ -21,7 +21,9 @@ var (
 func errorResponse(w http.ResponseWriter, status int, err error) {
 	w.Header().Set(headerContentType, applicationJSON)
 	w.WriteHeader(status)
-	w.Write([]byte(`"` + err.Error() + `"`))
+	if _, err := w.Write([]byte(`"` + err.Error() + `"`)); err != nil {
+		log.Debugf("[errorResponse] write error: %v", err)
+	}
 }
 
 func invalidArguments(w http.ResponseWriter) {
@@ -42,7 +44,7 @@ func jsonResponseWithStatus(w http.ResponseWriter, status int, data interface{})
 	w.Header().Set(headerContentType, applicationJSON)
 	w.WriteHeader(status)
 	if _, err := w.Write(encoded); err != nil {
-
+		log.Debugf("[jsonResponseWithStatus] write error: %v", err)
 	}
 }
 
@@ -50,7 +52,7 @@ func jsonBlobResponseWithStatus(w http.ResponseWriter, status int, data []byte) 
 	w.Header().Set(headerContentType, applicationJSON)
 	w.WriteHeader(status)
 	if _, err := w.Write(data); err != nil {
-
+		log.Debugf("[jsonBlobResponseWithStatus] write error: %v", err)
 	}
 }
 
@@ -62,7 +64,7 @@ func htmlResponseWithStatus(w http.ResponseWriter, status int, data string) {
 	w.Header().Set(headerContentType, textHTML)
 	w.WriteHeader(status)
 	if _, err := w.Write([]byte(data)); err != nil {
-
+		log.Debugf("[htmlResponseWithStatus] write error: %v", err)
 	}
 }
 
@@ -75,14 +77,10 @@ func redirectResponseWithStatus(w http.ResponseWriter, status int, location stri
 	w.WriteHeader(status)
 }
 
-func xmlResponse(w http.ResponseWriter, data []byte) {
-	xmlResponseWithStatus(w, http.StatusOK, data)
-}
-
 func xmlResponseWithStatus(w http.ResponseWriter, status int, data []byte) {
 	w.Header().Set(headerContentType, applicationXML)
 	w.WriteHeader(status)
 	if _, err := w.Write([]byte(data)); err != nil {
-
+		log.Debugf("[xmlResponseWithStatus] write error: %v", err)
 	}
 }

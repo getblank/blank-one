@@ -42,7 +42,6 @@ func createRESTAPI(httpEnabledStores []config.Store) {
 
 	r.Get(apiV1baseURI[:len(apiV1baseURI)-1], func(w http.ResponseWriter, r *http.Request) {
 		htmlResponse(w, html)
-		return
 	})
 
 	log.Info("REST API Documentation generated")

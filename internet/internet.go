@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -60,7 +59,9 @@ func initBaseRoutes() {
 	r.With(onlyGet).Get("/*", assetsHandler)
 
 	r.Get("/public-key", func(w http.ResponseWriter, r *http.Request) {
-		w.Write(sessions.PublicKeyBytes())
+		if _, err := w.Write(sessions.PublicKeyBytes()); err != nil {
+			log.Debugf("[get public keys] write error: %v", err)
+		}
 	})
 
 	r.Get("/common-settings", commonSettingsHandler)
@@ -91,7 +92,7 @@ func onlyGet(next http.Handler) http.Handler {
 			w.Header().Set("Allow", "GET")
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			if _, err := w.Write([]byte("Allow: GET")); err != nil {
-
+				log.Debugf("[onlyGet] write error: %v", err)
 			}
 
 			return
@@ -246,77 +247,6 @@ func commonSettingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, res.Result)
-}
-
-func facebookLoginHandler(w http.ResponseWriter, r *http.Request) {
-	sessionID := uuid.NewV4()
-	t := taskq.Task{
-		Type: taskq.Auth,
-		Arguments: map[string]interface{}{
-			"social":      "facebook",
-			"code":        r.URL.Query().Get("code"),
-			"redirectUrl": r.URL.Query().Get("redirectUrl"),
-			"sessionID":   sessionID,
-		},
-	}
-	res, err := taskq.PushAndGetResult(&t, 0)
-	if err != nil {
-		htmlResponseWithStatus(w, http.StatusSeeOther, err.Error())
-		return
-	}
-
-	user, ok := res.(map[string]interface{})
-	if !ok {
-		log.Warn("Invalid type of result on http login")
-		htmlResponseWithStatus(w, http.StatusInternalServerError, berrors.ErrError.Error())
-		return
-	}
-
-	apiKey, err := sessions.NewSession(user, sessionID)
-	if err != nil {
-		htmlResponseWithStatus(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	claims, err := extractClaimsFromJWT(apiKey)
-	if err != nil {
-		log.Warnf("Can't parse JWT error: '%s', token: '%s'", err.Error(), apiKey)
-	}
-
-	expiresAt := strconv.Itoa(int(claims.ExpiresAt))
-
-	result := `<script>
-		(function(){
-			localStorage.setItem("blank-access-token", "` + apiKey + `");
-			createCookie("blank-token", "` + apiKey + `", ` + expiresAt + `);
-			var redirectUrl = location.search.match(/redirectUrl=([^&]*)&?/);
-			if (redirectUrl) {
-				window.location = decodeURIComponent(redirectUrl[1]);
-				return;
-			}
-			window.location = location.protocol + "//" + location.host;
-
-			function createCookie(name, value, expiresAt) {
-				var cookie = "" + name + "=" + value,
-					deleting = expiresAt === -1,
-					expires = "";
-				if (expiresAt) {
-					expires = "; expires=" + new Date(deleting ? 0 : expiresAt * 1000).toGMTString();
-				}
-
-				const hostname = document.location.hostname.split(".");
-				for (var i = hostname.length - 1; i >= 0; i--) {
-					const h = hostname.slice(i).join(".");
-					document.cookie = cookie + expires + "; path=\/; domain=." + h + ";";
-					if (!deleting && document.cookie.indexOf(cookie) > -1) {
-						return;
-					}
-				}
-			}
-		}());
-	</script>`
-
-	jsonResponse(w, result)
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {

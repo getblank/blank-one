@@ -196,7 +196,7 @@ func publishHandler(c *wango.Conn, _uri string, args ...interface{}) (interface{
 }
 
 func subStoresHandler(c *wango.Conn, _uri string, args ...interface{}) (interface{}, error) {
-	storeName := strings.TrimLeft(_uri, uriSubStores)
+	storeName := strings.TrimPrefix(_uri, uriSubStores)
 	t := taskq.Task{
 		Store:  storeName,
 		Type:   taskq.DbFind,
@@ -322,7 +322,9 @@ func runServer() {
 	r.Get("/lib/", libHandler)
 
 	log.Info("TaskQueue will listen for connection on port ", listeningPort)
-	registry.Register("taskQueue", "ws://127.0.0.1", listeningPort, "0", "")
+	if _, err := registry.Register("taskQueue", "ws://127.0.0.1", listeningPort, "0", ""); err != nil {
+		log.Fatalf("register taskQ error: %v", err)
+	}
 
 	err = http.ListenAndServe(":"+listeningPort, r)
 	if err != nil {
@@ -332,5 +334,6 @@ func runServer() {
 
 func libHandler(w http.ResponseWriter, r *http.Request) {
 	if _, err := w.Write(appconfig.GetLibZip()); err != nil {
+		log.Debugf("[libHandler] write error: %v", err)
 	}
 }

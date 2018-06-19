@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -28,8 +27,6 @@ const (
 )
 
 var (
-	errLibCreateError = errors.New("Error saving uploaded file")
-
 	libFS    vfs.FileSystem
 	assetsFS vfs.FileSystem
 	libZip   []byte
@@ -42,7 +39,10 @@ func GetAsset(w http.ResponseWriter, filePath string) {
 	fsLocker.RLock()
 	if assetsFS == nil {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("file not found"))
+		if _, err := w.Write([]byte("file not found")); err != nil {
+			log.Errorf("write response error: %v", err)
+		}
+
 		fsLocker.RUnlock()
 		return
 	}
@@ -51,7 +51,9 @@ func GetAsset(w http.ResponseWriter, filePath string) {
 	fsLocker.RUnlock()
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			log.Errorf("write response error: %v", err)
+		}
 		return
 	}
 
@@ -62,7 +64,9 @@ func GetAsset(w http.ResponseWriter, filePath string) {
 
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(b)
+	if _, err := w.Write(b); err != nil {
+		log.Errorf("write response error: %v", err)
+	}
 }
 
 func PostAssetsHandler(rw http.ResponseWriter, request *http.Request) {
@@ -80,20 +84,30 @@ func GetLibZip() []byte {
 func PostConfigHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Only POST request is allowed"))
+		if _, err := w.Write([]byte("Only POST request is allowed")); err != nil {
+			log.Errorf("write response error: %v", err)
+		}
 		return
 	}
+
 	decoder := json.NewDecoder(r.Body)
 	var data map[string]config.Store
 
 	defer func() {
 		if r := recover(); r != nil {
 			w.WriteHeader(http.StatusBadRequest)
+			var res []byte
 			switch r.(type) {
 			case string:
-				w.Write([]byte(r.(string)))
+				res = []byte(r.(string))
 			case error:
-				w.Write([]byte(r.(error).Error()))
+				res = []byte(r.(error).Error())
+			default:
+				return
+			}
+
+			if _, err := w.Write(res); err != nil {
+				log.Errorf("write response error: %v", err)
 			}
 		}
 	}()
@@ -103,7 +117,9 @@ func PostConfigHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	w.Write([]byte("OK"))
+	if _, err := w.Write([]byte("OK")); err != nil {
+		log.Errorf("write response error: %v", err)
+	}
 	config.ReloadConfig(data)
 }
 
@@ -158,14 +174,18 @@ func postLibHandler(rw http.ResponseWriter, request *http.Request, fileName stri
 	_, err := buf.ReadFrom(request.Body)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("can't read file"))
+		if _, err := rw.Write([]byte("can't read file")); err != nil {
+			log.Debugf("[postLibHandler] write error: %v", err)
+		}
 		return
 	}
 
 	out, err := os.Create(fileName)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("can't create file"))
+		if _, err := rw.Write([]byte("can't create file")); err != nil {
+			log.Debugf("[postLibHandler] write error: %v", err)
+		}
 		return
 	}
 
@@ -173,12 +193,13 @@ func postLibHandler(rw http.ResponseWriter, request *http.Request, fileName stri
 	written, err := io.Copy(out, buf)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("can't write file"))
+		if _, err := rw.Write([]byte("can't write file")); err != nil {
+			log.Debugf("[postLibHandler] write error: %v", err)
+		}
 		return
 	}
 
 	log.Infof("new %s file created. Written %v bytes", fileName, written)
-	// wamp.Publish("config", config.Get())
 }
 
 func init() {

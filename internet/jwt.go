@@ -44,7 +44,7 @@ func (b *blankClaims) UnmarshalJSON(p []byte) error {
 		b.Extra = map[string]interface{}{}
 	}
 
-	jsonparser.ObjectEach(p, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+	err := jsonparser.ObjectEach(p, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		k := string(key)
 		switch k {
 		// standard claims
@@ -106,7 +106,7 @@ func (b *blankClaims) UnmarshalJSON(p []byte) error {
 		return nil
 	})
 
-	return nil
+	return err
 }
 
 func parseInterface(value []byte, dataType jsonparser.ValueType) (val interface{}, err error) {
@@ -139,12 +139,6 @@ func jwtChecker(t *jwt.Token) (interface{}, error) {
 	}
 
 	return sessions.PublicKey(), nil
-}
-
-func extractAPIKeyAndUserIDromJWT(token string) (apiKey string, userID interface{}, err error) {
-	claims, err := extractClaimsFromJWT(token)
-
-	return claims.SessionID, claims.UserID, err
 }
 
 func extractClaimsFromJWT(token string) (claims *blankClaims, err error) {

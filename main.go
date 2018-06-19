@@ -14,7 +14,7 @@ import (
 var (
 	buildTime string
 	gitHash   string
-	version   = "0.0.13"
+	version   = "0.0.14"
 )
 
 var log = logging.Logger()
@@ -26,6 +26,12 @@ func main() {
 		printVersion()
 		return
 	}
+
+	defer func() {
+		if err := log.Sync(); err != nil {
+			panic(err)
+		}
+	}()
 
 	config.Init("./config.json")
 	go internet.Init(version)

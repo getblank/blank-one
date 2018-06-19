@@ -42,7 +42,5 @@ func init() {
 	)
 
 	logger := zap.New(core)
-	defer logger.Sync()
-
 	l = logger.Sugar()
 }

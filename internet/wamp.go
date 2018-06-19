@@ -15,11 +15,6 @@ import (
 )
 
 const (
-	uriSignOut              = "com.sign-out"
-	uriSignUp               = "com.sign-up"
-	uriPasswordResetRequest = "com.send-reset-link"
-	uriResetPassword        = "com.reset-password"
-
 	uriState  = "com.state"
 	uriAction = "com.action"
 	uriTime   = "com.time"
@@ -27,7 +22,6 @@ const (
 	uriSubConfig = "com.config"
 	uriSubStores = "com.stores"
 	uriSubUser   = "com.user"
-	uriSubReload = "com.reload"
 )
 
 var (
@@ -54,8 +48,15 @@ func wampHandler(ws *websocket.Conn) {
 	}
 
 	if !canUpgrade {
-		ws.Write(forbiddenMessageBytes)
-		ws.WriteClose(403)
+		if _, err := ws.Write(forbiddenMessageBytes); err != nil {
+			log.Debugf("[wampHandler] write forbidden error: %v", err)
+			return
+		}
+
+		if err := ws.WriteClose(403); err != nil {
+			log.Debugf("[wampHandler] WriteClose error: %v", err)
+		}
+
 		return
 	}
 
@@ -67,10 +68,6 @@ func wampInit() {
 	wamp.SetSessionOpenCallback(sessionOpenCallback)
 	wamp.SetSessionCloseCallback(sessionCloseCallback)
 
-	// err := wamp.RegisterRPCHandler(uriSignOut, signOutHandler)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	err := wamp.RegisterRPCHandler(uriState, stateHandler)
 	if err != nil {
 		panic(err)
@@ -88,20 +85,6 @@ func wampInit() {
 	if err != nil {
 		panic(err)
 	}
-
-	// err = wamp.RegisterRPCHandler(uriSignUp, signUpHandler)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// err = wamp.RegisterRPCHandler(uriPasswordResetRequest, passwordResetRequestHandler)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// err = wamp.RegisterRPCHandler(uriResetPassword, resetPasswordHandler)
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	err = wamp.RegisterSubHandler(uriSubUser, subUserHandler, nil, nil)
 	if err != nil {
@@ -140,10 +123,6 @@ func sessionCloseCallback(c *wango.Conn) {
 	if err != nil {
 		log.Errorf("Can't delete connection when session closed, error: %v", err)
 	}
-}
-
-func anyHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
-	return "8===>", nil
 }
 
 func timeHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
@@ -235,73 +214,6 @@ func checkUserWAMPHandler(c *wango.Conn, uri string, args ...interface{}) (inter
 		return "USER_EXISTS", nil
 	}
 	return "USER_NOT_FOUND", nil
-}
-
-func passwordResetRequestHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
-	if len(args) == 0 {
-		return nil, berrors.ErrInvalidArguments
-	}
-	arguments, ok := args[0].(map[string]interface{})
-	if !ok {
-		return nil, berrors.ErrInvalidArguments
-	}
-	t := taskq.Task{
-		Type:      taskq.PasswordResetRequest,
-		Arguments: arguments,
-	}
-	return taskq.PushAndGetResult(&t, 0)
-}
-
-// func resetPasswordHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
-// 	if len(args) == 0 {
-// 		return nil, berrors.ErrInvalidArguments
-// 	}
-// 	arguments, ok := args[0].(map[string]interface{})
-// 	if !ok {
-// 		return nil, berrors.ErrInvalidArguments
-// 	}
-// 	t := taskq.Task{
-// 		Type:      taskq.PasswordReset,
-// 		Arguments: arguments,
-// 	}
-// 	return taskq.PushAndGetResult(&t, 0)
-// }
-
-func signOutHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
-	extra := c.GetExtra()
-	if extra == nil {
-		return nil, errors.New("No session")
-	}
-	cred, ok := extra.(credentials)
-	if !ok {
-		log.Warn("Extra is invalid type")
-		return nil, berrors.ErrError
-	}
-	err := sessions.DeleteSession(cred.sessionID)
-	c.SetExtra(nil)
-	return nil, err
-}
-
-func signUpHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
-	if len(args) == 0 {
-		return nil, berrors.ErrInvalidArguments
-	}
-	if c.GetExtra() != nil {
-		return nil, errors.New("already logged in, can't signup")
-	}
-	arguments, ok := args[0].(map[string]interface{})
-	if !ok {
-		return nil, berrors.ErrInvalidArguments
-	}
-	t := taskq.Task{
-		Type:      taskq.SignUp,
-		Arguments: arguments,
-	}
-	res, err := taskq.PushAndGetResult(&t, 0)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func stateHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
