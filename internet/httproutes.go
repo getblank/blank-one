@@ -179,7 +179,7 @@ func createFileHandlers(storeName string) {
 	group.With(jwtAuthMiddleware(true)).Get("/:id", getFileHandler(storeName))
 	group.With(jwtAuthMiddleware(false)).Post("/:id", postFileHandler(storeName))
 	group.With(jwtAuthMiddleware(false)).Delete("/:id", deleteFileHandler(storeName))
-	log.Infof("Created handlers for fileStore '%s' with path %s:id", storeName, groupURI)
+	log.Infof("Created handlers for fileStore '%s' with path %s", storeName, groupURI)
 }
 
 func writeFileFromFileStore(w http.ResponseWriter, storeName, fileID, fileName string) {
