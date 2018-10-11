@@ -1,6 +1,7 @@
 package internet
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -282,6 +283,14 @@ func restGetDocumentHandler(storeName string) http.HandlerFunc {
 			Arguments: map[string]interface{}{
 				"_id": id,
 			},
+		}
+		if ver := r.URL.Query().Get("__v"); len(ver) > 0 {
+			v, err := strconv.Atoi(ver)
+			if err != nil {
+				errorResponse(w, http.StatusBadRequest, errors.New("invalid __v param"))
+				return
+			}
+			t.Arguments["__v"] = v
 		}
 		if cred.claims != nil {
 			t.Arguments["tokenInfo"] = cred.claims.toMap()
