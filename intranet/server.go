@@ -164,7 +164,7 @@ func internalCloseCallback(c *wango.Conn) {
 // args: uri string, event interface{}, subscribers array of connIDs
 // This data will be transferred sent as event on "events" topic
 func publishHandler(c *wango.Conn, _uri string, args ...interface{}) (interface{}, error) {
-	if len(args) < 3 {
+	if len(args) < 2 {
 		return nil, berrors.ErrInvalidArguments
 	}
 
@@ -174,6 +174,11 @@ func publishHandler(c *wango.Conn, _uri string, args ...interface{}) (interface{
 	}
 
 	wampServer.Publish(uri, args[1])
+
+	if len(args) < 3 {
+		onEventHandler(uri, args[1], nil)
+		return nil, nil
+	}
 
 	_subscribers, ok := args[2].([]interface{})
 	if !ok {

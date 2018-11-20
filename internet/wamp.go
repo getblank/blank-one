@@ -11,6 +11,7 @@ import (
 	"github.com/getblank/rgx"
 	"github.com/getblank/wango"
 
+	"github.com/getblank/blank-one/intranet"
 	"github.com/getblank/blank-one/sessions"
 )
 
@@ -102,6 +103,17 @@ func wampInit() {
 	if err != nil {
 		panic(err)
 	}
+
+	intranet.OnEvent(onSREvent)
+}
+
+func onSREvent(uri string, event interface{}, subscribers []string) {
+	if subscribers == nil {
+		wamp.Publish(uri, event)
+		return
+	}
+
+	wamp.SendEvent(uri, event, subscribers)
 }
 
 func sessionOpenCallback(c *wango.Conn) {
