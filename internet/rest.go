@@ -158,6 +158,11 @@ func restActionHandler(storeName, actionID string) http.HandlerFunc {
 				return
 			}
 
+			if strings.EqualFold(errText, "unauthorized") {
+				jsonResponseWithStatus(w, http.StatusForbidden, errText)
+				return
+			}
+
 			fields := strings.SplitN(errText, " ", 2)
 			statusCode := http.StatusInternalServerError
 			if len(fields) > 1 {
@@ -246,6 +251,11 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 				return
 			}
 
+			if strings.EqualFold(err.Error(), "unauthorized") {
+				jsonResponseWithStatus(w, http.StatusForbidden, err.Error())
+				return
+			}
+
 			errorResponse(w, http.StatusSeeOther, err)
 			return
 		}
@@ -303,6 +313,11 @@ func restGetDocumentHandler(storeName string) http.HandlerFunc {
 				return
 			}
 
+			if strings.EqualFold(err.Error(), "unauthorized") {
+				jsonResponseWithStatus(w, http.StatusForbidden, err.Error())
+				return
+			}
+
 			errorResponse(w, http.StatusSeeOther, err)
 			return
 		}
@@ -351,6 +366,11 @@ func restPostDocumentHandler(storeName string) http.HandlerFunc {
 
 		res, err := taskq.PushAndGetResult(&t, 0)
 		if err != nil {
+			if strings.EqualFold(err.Error(), "unauthorized") {
+				jsonResponseWithStatus(w, http.StatusForbidden, err.Error())
+				return
+			}
+
 			errorResponse(w, http.StatusSeeOther, err)
 			return
 		}
@@ -407,6 +427,16 @@ func restPutDocumentHandler(storeName string) http.HandlerFunc {
 		}
 
 		if _, err := taskq.PushAndGetResult(&t, 0); err != nil {
+			if strings.EqualFold(err.Error(), "not found") {
+				jsonResponseWithStatus(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
+				return
+			}
+
+			if strings.EqualFold(err.Error(), "unauthorized") {
+				jsonResponseWithStatus(w, http.StatusForbidden, err.Error())
+				return
+			}
+
 			errorResponse(w, http.StatusSeeOther, err)
 			return
 		}
@@ -451,7 +481,12 @@ func restDeleteDocumentHandler(storeName string) http.HandlerFunc {
 
 		if _, err := taskq.PushAndGetResult(&t, 0); err != nil {
 			if strings.EqualFold(err.Error(), "not found") {
-				jsonResponse(w, http.StatusText(http.StatusOK))
+				errorResponse(w, http.StatusNotFound, err)
+				return
+			}
+
+			if strings.EqualFold(err.Error(), "unauthorized") {
+				jsonResponseWithStatus(w, http.StatusForbidden, err.Error())
 				return
 			}
 
