@@ -2,6 +2,7 @@ package internet
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,6 +54,7 @@ func createRESTAPI(httpEnabledStores []config.Store) {
 }
 
 func createRESTAPIForStore(store config.Store) {
+	log.Debugf("Creating REST API for store %q", store.Store)
 	baseURI := apiV1baseURI + store.Store
 	lowerBaseURI := strings.ToLower(baseURI)
 
@@ -117,6 +119,8 @@ func createRESTAPIForStore(store config.Store) {
 			log.Debugf("Created POST storeAction REST method %s", lowerActionURI)
 		}
 	}
+
+	restCreateWidgetLoadData(store)
 }
 
 func restActionHandler(storeName, actionID string) http.HandlerFunc {
@@ -495,5 +499,110 @@ func restDeleteDocumentHandler(storeName string) http.HandlerFunc {
 		}
 
 		jsonResponse(w, http.StatusText(http.StatusOK))
+	}
+}
+
+func restCreateWidgetLoadData(store config.Store) {
+	if len(store.Widgets) == 0 {
+		return
+	}
+
+	uri := fmt.Sprintf("%s%s/widgets/{widgetID}/load", apiV1baseURI, store.Store)
+	r := r.With(jwtAuthMiddleware(false))
+	r.Get(uri, restWidgetLoadDataHandler(store))
+	log.Debugf("Created GET REST method %q", uri)
+}
+
+func restWidgetLoadDataHandler(store config.Store) http.HandlerFunc {
+	idPropDesc := store.Props["_id"]
+	idIsInt := idPropDesc.Type == "int"
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		c := r.Context().Value(credKey)
+		if c == nil {
+			log.Warn("[rest get]: no cred in echo context")
+			jsonResponseWithStatus(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+			return
+		}
+
+		cred, ok := c.(credentials)
+		if !ok {
+			log.Warn("[rest get]: invalid cred in echo context")
+			jsonResponseWithStatus(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+			return
+		}
+
+		widgetID := chi.URLParam(r, "widgetID")
+		if len(widgetID) == 0 {
+			jsonResponseWithStatus(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+			return
+		}
+
+		var found bool
+		for _, w := range store.Widgets {
+			if w.ID == widgetID {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			jsonResponseWithStatus(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
+			return
+		}
+
+		var itemID, data interface{}
+		if id := r.URL.Query().Get("itemId"); len(id) > 0 {
+			if idIsInt {
+				var err error
+				itemID, err = strconv.Atoi(id)
+				if err != nil {
+					errorResponse(w, http.StatusBadRequest, err)
+					return
+				}
+			} else {
+				itemID = id
+			}
+		}
+
+		if d := r.URL.Query().Get("data"); len(d) > 0 {
+			err := json.Unmarshal([]byte(d), &data)
+			if err != nil {
+				errorResponse(w, http.StatusBadRequest, err)
+				return
+			}
+		}
+
+		t := taskq.Task{
+			Type:   taskq.WidgetData,
+			UserID: cred.userID,
+			Store:  store.Store,
+			Arguments: map[string]interface{}{
+				"widgetId": widgetID,
+				"itemId":   itemID,
+				"data":     data,
+			},
+		}
+		if cred.claims != nil {
+			t.Arguments["tokenInfo"] = cred.claims.toMap()
+		}
+
+		res, err := taskq.PushAndGetResult(&t, 0)
+		if err != nil {
+			if strings.EqualFold(err.Error(), "not found") {
+				errorResponse(w, http.StatusNotFound, err)
+				return
+			}
+
+			if strings.EqualFold(err.Error(), "unauthorized") {
+				jsonResponseWithStatus(w, http.StatusForbidden, err.Error())
+				return
+			}
+
+			errorResponse(w, http.StatusSeeOther, err)
+			return
+		}
+
+		jsonResponse(w, res)
 	}
 }

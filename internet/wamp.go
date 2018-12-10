@@ -2,6 +2,8 @@ package internet
 
 import (
 	"errors"
+	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/net/websocket"
@@ -142,6 +144,10 @@ func timeHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, e
 }
 
 func actionHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
+	if err := checkLegacyWAMPSupport(); err != nil {
+		return nil, err
+	}
+
 	if len(args) < 3 {
 		return nil, berrors.ErrInvalidArguments
 	}
@@ -255,6 +261,10 @@ func rgxRPCHandler(c *wango.Conn, uri string, args ...interface{}) (interface{},
 
 	match, ok := rgxRPC.FindStringSubmatchMap(uri)
 	if ok {
+		if err := checkLegacyWAMPSupport(); err != nil {
+			return nil, err
+		}
+
 		store := match["store"]
 		t := taskq.Task{
 			UserID: userID,
@@ -320,4 +330,12 @@ func rgxRPCHandler(c *wango.Conn, uri string, args ...interface{}) (interface{},
 		}
 	}
 	return nil, errUnknownMethod
+}
+
+func checkLegacyWAMPSupport() error {
+	if env := os.Getenv("BLANK_LEGACY_SUPPORT"); strings.EqualFold(env, "true") {
+		return nil
+	}
+
+	return errors.New("WAMP calls are deprecated, use REST methods instead.")
 }
