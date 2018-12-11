@@ -269,6 +269,7 @@ func runServer() {
 
 	config.OnUpdate(func(c map[string]config.Store) {
 		wampServer.Publish("config", c)
+		runMigrationScripts(c)
 	})
 
 	err := wampServer.RegisterRPCHandler(getTaskURI, taskGetHandler)
