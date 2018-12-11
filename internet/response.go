@@ -19,11 +19,7 @@ var (
 )
 
 func errorResponse(w http.ResponseWriter, status int, err error) {
-	w.Header().Set(headerContentType, applicationJSON)
-	w.WriteHeader(status)
-	if _, err := w.Write([]byte(`"` + err.Error() + `"`)); err != nil {
-		log.Debugf("[errorResponse] write error: %v", err)
-	}
+	jsonResponseWithStatus(w, status, err.Error())
 }
 
 func invalidArguments(w http.ResponseWriter) {
