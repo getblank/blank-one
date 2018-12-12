@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
-	logger "github.com/ivahaev/go-logger"
 	"github.com/pkg/errors"
 
 	"github.com/getblank/blank-router/taskq"
@@ -180,7 +179,6 @@ func createFileHandlers(storeName string) {
 	group.With(jwtAuthMiddleware(true)).Get("/{id}", getFileHandler(storeName))
 	group.With(jwtAuthMiddleware(false)).Post("/{id}", postFileHandler(storeName))
 	group.With(jwtAuthMiddleware(false)).Delete("/{id}", deleteFileHandler(storeName))
-	logger.Debug(group.Routes())
 }
 
 func writeFileFromFileStore(w http.ResponseWriter, storeName, fileID, fileName string) {
