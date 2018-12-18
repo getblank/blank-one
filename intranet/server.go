@@ -17,6 +17,7 @@ import (
 
 	"github.com/getblank/blank-one/appconfig"
 	"github.com/getblank/blank-one/logging"
+	"github.com/getblank/blank-one/sessions"
 	"github.com/getblank/blank-one/sr"
 )
 
@@ -27,6 +28,11 @@ const (
 	publishURI   = "publish"
 	cronRunURI   = "cron.run"
 	uriSubStores = "com.stores"
+
+	rpcSessionNew        = "session.new"
+	rpcSessionCheck      = "session.check"
+	rpcSessionDelete     = "session.delete"
+	rpcSessionUserUpdate = "session.user-update"
 )
 
 var (
@@ -261,6 +267,30 @@ func taskWatcher() {
 	}
 }
 
+func sessionNewHandler(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
+	if len(args) < 1 {
+		log.Warn("Invalid cron.run RPC")
+		return nil, berrors.ErrInvalidArguments
+	}
+
+	user, ok := args[0].(map[string]interface{})
+	if !ok {
+		userID, ok := args[0].(string)
+		if !ok {
+			return nil, berrors.ErrInvalidArguments
+		}
+		user = map[string]interface{}{"_id": userID}
+	}
+
+	return sessions.NewSession(user, "")
+}
+
+func chechErrorAndPanic(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func runServer() {
 	go taskWatcher()
 
@@ -272,35 +302,15 @@ func runServer() {
 		runMigrationScripts(c)
 	})
 
-	err := wampServer.RegisterRPCHandler(getTaskURI, taskGetHandler)
-	if err != nil {
-		panic(err)
-	}
+	chechErrorAndPanic(wampServer.RegisterRPCHandler(getTaskURI, taskGetHandler))
+	chechErrorAndPanic(wampServer.RegisterRPCHandler(doneTaskURI, taskDoneHandler))
+	chechErrorAndPanic(wampServer.RegisterRPCHandler(errorTaskURI, taskErrorHandler))
+	chechErrorAndPanic(wampServer.RegisterRPCHandler(publishURI, publishHandler))
+	chechErrorAndPanic(wampServer.RegisterRPCHandler(cronRunURI, cronRunHandler))
 
-	err = wampServer.RegisterRPCHandler(doneTaskURI, taskDoneHandler)
-	if err != nil {
-		panic(err)
-	}
+	chechErrorAndPanic(wampServer.RegisterRPCHandler(rpcSessionNew, sessionNewHandler))
 
-	err = wampServer.RegisterRPCHandler(errorTaskURI, taskErrorHandler)
-	if err != nil {
-		panic(err)
-	}
-
-	err = wampServer.RegisterRPCHandler(publishURI, publishHandler)
-	if err != nil {
-		panic(err)
-	}
-
-	err = wampServer.RegisterRPCHandler(cronRunURI, cronRunHandler)
-	if err != nil {
-		panic(err)
-	}
-
-	err = wampServer.RegisterSubHandler(uriSubStores, subStoresHandler, nil, nil)
-	if err != nil {
-		panic(err)
-	}
+	chechErrorAndPanic(wampServer.RegisterSubHandler(uriSubStores, subStoresHandler, nil, nil))
 
 	sr.Init(wampServer, srEventHandler)
 
@@ -332,7 +342,7 @@ func runServer() {
 		log.Fatalf("register taskQ error: %v", err)
 	}
 
-	err = http.ListenAndServe(":"+listeningPort, r)
+	err := http.ListenAndServe(":"+listeningPort, r)
 	if err != nil {
 		log.Fatalf("ListenAndServe: %v", err)
 	}
