@@ -266,13 +266,14 @@ func createHTTPActions(storeName string, actions []config.Action) {
 			defaultResponse(w, r, res)
 		}
 
+		path := fmt.Sprintf("%s/%s", groupURI, v.ID)
 		if v.Type == "http" {
-			r.With(jwtAuthMiddleware(false)).Get(fmt.Sprintf("%s/%s", groupURI, v.ID), handler)
+			r.With(jwtAuthMiddleware(false)).Get(path, handler)
 		} else {
-			r.With(jwtAuthMiddleware(false)).Post(fmt.Sprintf("%s/%s", groupURI, v.ID), handler)
+			r.With(jwtAuthMiddleware(false)).Post(path, handler)
 		}
 
-		log.Infof("Registered httpAction for store '%s' with path %s", storeName, groupURI+v.ID)
+		log.Infof("Registered httpAction for store '%s' with path %s", storeName, path)
 	}
 }
 
@@ -327,6 +328,25 @@ func extractRequest(r *http.Request) map[string]interface{} {
 	}
 }
 
+func serverRedirect(w http.ResponseWriter, uri string) {
+	res, err := http.Get(uri)
+	if err != nil {
+		jsonResponseWithStatus(w, res.StatusCode, res.Status)
+		return
+	}
+
+	defer res.Body.Close()
+	for k, v := range res.Header {
+		for _, h := range v {
+			w.Header().Add(k, h)
+		}
+	}
+
+	if _, err := io.Copy(w, res.Body); err != nil {
+		log.Errorf("[writeFileFromFileStore] write error: %v", err)
+	}
+}
+
 func defaultResponse(w http.ResponseWriter, r *http.Request, res *result) {
 	if res == nil {
 		jsonResponse(w, http.StatusText(http.StatusOK))
@@ -343,6 +363,13 @@ func defaultResponse(w http.ResponseWriter, r *http.Request, res *result) {
 	}
 
 	switch res.Type {
+	case "serverRedirect":
+		if code == 200 {
+			code = http.StatusFound
+		}
+
+		serverRedirect(w, res.Data)
+		return
 	case "REDIRECT", "redirect":
 		if code == 200 {
 			code = http.StatusFound
