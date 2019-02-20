@@ -15,11 +15,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/pkg/errors"
 
+	"github.com/getblank/blank-one/sr"
 	"github.com/getblank/blank-router/taskq"
 	"github.com/getblank/blank-sr/config"
 	"github.com/getblank/uuid"
-
-	"github.com/getblank/blank-one/sr"
 )
 
 const apiV1baseURI = "/api/v1/"
