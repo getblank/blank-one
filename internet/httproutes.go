@@ -412,7 +412,7 @@ func responseFile(w http.ResponseWriter, r *http.Request, res *result) {
 		}
 
 		if len(w.Header().Get(headerContentDisposition)) == 0 {
-			w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", fileName))
+			w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%q", fileName))
 		}
 
 		http.ServeFile(w, r, res.FilePath)
