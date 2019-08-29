@@ -206,7 +206,7 @@ func writeFileFromFileStore(w http.ResponseWriter, storeName, fileID, fileName s
 		}
 	}
 
-	w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", fileName))
+	w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%q", fileName))
 	body, _ := ioutil.ReadAll(res.Body)
 	if _, err := w.Write(body); err != nil {
 		log.Errorf("[writeFileFromFileStore] write error: %v", err)
@@ -430,7 +430,7 @@ func responseFile(w http.ResponseWriter, r *http.Request, res *result) {
 	}
 
 	if len(w.Header().Get(headerContentDisposition)) == 0 {
-		w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%s", res.FileName))
+		w.Header().Set(headerContentDisposition, fmt.Sprintf("attachment; filename=%q", res.FileName))
 	}
 	if len(w.Header().Get(headerContentType)) == 0 {
 		w.Header().Set(headerContentType, detectContentType(res.FileName, content))
@@ -555,7 +555,7 @@ func postFileHandler(storeName string) func(http.ResponseWriter, *http.Request) 
 		}
 
 		req.Header.Set("File-Name", fileName)
-		req.Header.Set(headerContentDisposition, fmt.Sprintf(`attachment; filename="%s"`, fileName))
+		req.Header.Set(headerContentDisposition, fmt.Sprintf(`attachment; filename=%q`, fileName))
 		client := &http.Client{}
 		_, err = client.Do(req)
 		if err != nil {
