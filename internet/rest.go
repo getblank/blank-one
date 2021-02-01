@@ -125,6 +125,9 @@ func createRESTAPIForStore(store config.Store) {
 
 func restActionHandler(storeName, actionID string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		totalTiming := newServerTiming(w, "total")
+
+		credTiming := newServerTiming(w, "cred")
 		c := r.Context().Value(credKey)
 		if c == nil {
 			log.Warn("[rest action]: no cred in echo context")
@@ -138,7 +141,9 @@ func restActionHandler(storeName, actionID string) http.HandlerFunc {
 			jsonResponseWithStatus(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
+		credTiming.End()
 
+		taskTiming := newServerTiming(w, "task")
 		log.Debugf("REST ACTION: store: %s, actionID: %s. credentials extracted", storeName, actionID)
 		t := taskq.Task{
 			Type:   taskq.DbAction,
@@ -155,6 +160,7 @@ func restActionHandler(storeName, actionID string) http.HandlerFunc {
 		}
 
 		res, err := taskq.PushAndGetResult(&t, 0)
+		taskTiming.End()
 		if err != nil {
 			errText := err.Error()
 			if strings.EqualFold(errText, "not found") {
@@ -176,6 +182,7 @@ func restActionHandler(storeName, actionID string) http.HandlerFunc {
 				}
 			}
 
+			totalTiming.End()
 			jsonResponseWithStatus(w, statusCode, errText)
 			return
 		}
@@ -186,6 +193,9 @@ func restActionHandler(storeName, actionID string) http.HandlerFunc {
 
 func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		totalTiming := newServerTiming(w, "total")
+
+		credTiming := newServerTiming(w, "cred")
 		c := r.Context().Value(credKey)
 		if c == nil {
 			log.Warn("[rest get all]: no cred in echo context")
@@ -199,7 +209,9 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 			jsonResponseWithStatus(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
+		credTiming.End()
 
+		queryTiming := newServerTiming(w, "query")
 		var query map[string]interface{}
 		if q := r.URL.Query().Get("query"); len(q) > 0 {
 			err := json.Unmarshal([]byte(q), &query)
@@ -235,7 +247,9 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 		if orderBy := r.URL.Query().Get("orderBy"); len(orderBy) > 0 {
 			findQuery["orderBy"] = orderBy
 		}
+		queryTiming.End()
 
+		taskTiming := newServerTiming(w, "task")
 		t := taskq.Task{
 			Type:   taskq.DbFind,
 			UserID: cred.userID,
@@ -249,6 +263,7 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 		}
 
 		res, err := taskq.PushAndGetResult(&t, 0)
+		taskTiming.End()
 		if err != nil {
 			if strings.EqualFold(err.Error(), "not found") {
 				errorResponse(w, http.StatusNotFound, err)
@@ -264,12 +279,16 @@ func restGetAllDocumentsHandler(storeName string) http.HandlerFunc {
 			return
 		}
 
+		totalTiming.End()
 		jsonResponse(w, res)
 	}
 }
 
 func restGetDocumentHandler(storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		totalTiming := newServerTiming(w, "total")
+
+		credTiming := newServerTiming(w, "cred")
 		c := r.Context().Value(credKey)
 		if c == nil {
 			log.Warn("[rest get]: no cred in echo context")
@@ -283,6 +302,7 @@ func restGetDocumentHandler(storeName string) http.HandlerFunc {
 			jsonResponseWithStatus(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
+		credTiming.End()
 
 		id := chi.URLParam(r, "id")
 		if len(id) == 0 {
@@ -290,6 +310,7 @@ func restGetDocumentHandler(storeName string) http.HandlerFunc {
 			return
 		}
 
+		taskTiming := newServerTiming(w, "task")
 		t := taskq.Task{
 			Type:   taskq.DbGet,
 			UserID: cred.userID,
@@ -311,6 +332,7 @@ func restGetDocumentHandler(storeName string) http.HandlerFunc {
 		}
 
 		res, err := taskq.PushAndGetResult(&t, 0)
+		taskTiming.End()
 		if err != nil {
 			if strings.EqualFold(err.Error(), "not found") {
 				errorResponse(w, http.StatusNotFound, err)
@@ -326,12 +348,16 @@ func restGetDocumentHandler(storeName string) http.HandlerFunc {
 			return
 		}
 
+		totalTiming.End()
 		jsonResponse(w, res)
 	}
 }
 
 func restPostDocumentHandler(storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		totalTiming := newServerTiming(w, "total")
+
+		credTiming := newServerTiming(w, "cred")
 		c := r.Context().Value(credKey)
 		if c == nil {
 			log.Warn("[rest post]: no cred in echo context")
@@ -345,7 +371,9 @@ func restPostDocumentHandler(storeName string) http.HandlerFunc {
 			jsonResponseWithStatus(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
+		credTiming.End()
 
+		decodeTiming := newServerTiming(w, "decode")
 		var item map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
 			errorResponse(w, http.StatusBadRequest, err)
@@ -355,7 +383,9 @@ func restPostDocumentHandler(storeName string) http.HandlerFunc {
 		if item["_id"] == nil {
 			item["_id"] = uuid.NewV4()
 		}
+		decodeTiming.End()
 
+		taskTiming := newServerTiming(w, "task")
 		t := taskq.Task{
 			Type:   taskq.DbSet,
 			UserID: cred.userID,
@@ -369,6 +399,7 @@ func restPostDocumentHandler(storeName string) http.HandlerFunc {
 		}
 
 		res, err := taskq.PushAndGetResult(&t, 0)
+		taskTiming.End()
 		if err != nil {
 			if strings.EqualFold(err.Error(), "unauthorized") {
 				jsonResponseWithStatus(w, http.StatusForbidden, err.Error())
@@ -385,12 +416,16 @@ func restPostDocumentHandler(storeName string) http.HandlerFunc {
 			return
 		}
 
+		totalTiming.End()
 		jsonResponseWithStatus(w, http.StatusCreated, item["_id"])
 	}
 }
 
 func restPutDocumentHandler(storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		totalTiming := newServerTiming(w, "total")
+
+		credTiming := newServerTiming(w, "cred")
 		c := r.Context().Value(credKey)
 		if c == nil {
 			log.Warn("[rest put]: no cred in echo context")
@@ -404,7 +439,9 @@ func restPutDocumentHandler(storeName string) http.HandlerFunc {
 			jsonResponseWithStatus(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
+		credTiming.End()
 
+		decodeTiming := newServerTiming(w, "decode")
 		id := chi.URLParam(r, "id")
 		if len(id) == 0 {
 			jsonResponseWithStatus(w, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
@@ -418,6 +455,7 @@ func restPutDocumentHandler(storeName string) http.HandlerFunc {
 		}
 
 		item["_id"] = id
+		decodeTiming.End()
 		t := taskq.Task{
 			Type:   taskq.DbSet,
 			UserID: cred.userID,
@@ -430,7 +468,9 @@ func restPutDocumentHandler(storeName string) http.HandlerFunc {
 			t.Arguments["tokenInfo"] = cred.claims.toMap()
 		}
 
+		taskTiming := newServerTiming(w, "task")
 		if _, err := taskq.PushAndGetResult(&t, 0); err != nil {
+			taskTiming.End()
 			if strings.EqualFold(err.Error(), "not found") {
 				jsonResponseWithStatus(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 				return
@@ -444,7 +484,9 @@ func restPutDocumentHandler(storeName string) http.HandlerFunc {
 			errorResponse(w, http.StatusSeeOther, err)
 			return
 		}
+		taskTiming.End()
 
+		totalTiming.End()
 		jsonResponse(w, http.StatusText(http.StatusOK))
 	}
 }
