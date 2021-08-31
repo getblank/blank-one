@@ -1,0 +1,91 @@
+# github.com/boltdb/bolt v1.3.2-0.20180302180052-fd01fc79c553
+## explicit
+github.com/boltdb/bolt
+# github.com/buger/jsonparser v0.0.0-20180318095312-2cac668e8456
+## explicit
+github.com/buger/jsonparser
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+## explicit
+github.com/dgrijalva/jwt-go
+# github.com/getblank/blank-router v0.2.6
+## explicit
+github.com/getblank/blank-router/berrors
+github.com/getblank/blank-router/taskq
+# github.com/getblank/blank-sr v0.1.37
+## explicit
+github.com/getblank/blank-sr/bdb
+github.com/getblank/blank-sr/berror
+github.com/getblank/blank-sr/config
+github.com/getblank/blank-sr/localstorage
+github.com/getblank/blank-sr/registry
+github.com/getblank/blank-sr/sessionstore
+github.com/getblank/blank-sr/sync
+# github.com/getblank/rgx v0.0.0-20160518104151-4794b47be0bc
+## explicit
+github.com/getblank/rgx
+# github.com/getblank/uuid v0.0.0-20160519113122-af8bcd064446
+## explicit
+github.com/getblank/uuid
+# github.com/getblank/wango v0.0.0-20161019105944-d4225a993803
+## explicit
+github.com/getblank/wango
+# github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+## explicit
+github.com/globalsign/mgo
+github.com/globalsign/mgo/bson
+github.com/globalsign/mgo/internal/json
+github.com/globalsign/mgo/internal/sasl
+github.com/globalsign/mgo/internal/scram
+# github.com/go-chi/chi v3.3.3-0.20180202194135-e223a795a06a+incompatible
+## explicit
+github.com/go-chi/chi
+github.com/go-chi/chi/middleware
+# github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3
+## explicit
+github.com/jinzhu/copier
+# github.com/json-iterator/go v0.0.0-20180408002546-f89479f5c0d8
+## explicit
+github.com/json-iterator/go
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+## explicit
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v0.0.0-20180320133207-05fbef0ca5da
+## explicit
+github.com/modern-go/reflect2
+# github.com/pkg/errors v0.8.1-0.20180311214515-816c9085562c
+## explicit
+github.com/pkg/errors
+# github.com/robfig/cron v1.0.1-0.20171101201047-2315d5715e36
+## explicit
+github.com/robfig/cron
+# github.com/sirupsen/logrus v1.0.6-0.20180329225952-778f2e774c72
+## explicit
+github.com/sirupsen/logrus
+# go.uber.org/atomic v1.3.1
+## explicit
+go.uber.org/atomic
+# go.uber.org/multierr v1.1.1-0.20180122172545-ddea229ff1df
+## explicit
+go.uber.org/multierr
+# go.uber.org/zap v1.7.2-0.20171031232209-f85c78b1dd99
+## explicit
+go.uber.org/zap
+go.uber.org/zap/buffer
+go.uber.org/zap/internal/bufferpool
+go.uber.org/zap/internal/color
+go.uber.org/zap/internal/exit
+go.uber.org/zap/zapcore
+# golang.org/x/crypto v0.0.0-20180403160946-b2aa35443fbc
+## explicit
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/net v0.0.0-20180406214816-61147c48b25b
+## explicit
+golang.org/x/net/websocket
+# golang.org/x/sys v0.0.0-20180406135729-3b87a42e500a
+## explicit
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/tools v0.0.0-20180401165715-ac136b6c2db7
+## explicit
+golang.org/x/tools/godoc/vfs
+golang.org/x/tools/godoc/vfs/zipfs
