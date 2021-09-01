@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/boltdb/bolt v1.3.2-0.20180302180052-fd01fc79c553 // indirect
-	github.com/buger/jsonparser v0.0.0-20180318095312-2cac668e8456
+	github.com/buger/jsonparser v1.1.1
 	github.com/getblank/blank-router v0.2.6
 	github.com/getblank/blank-sr v0.1.38
 	github.com/getblank/rgx v0.0.0-20160518104151-4794b47be0bc

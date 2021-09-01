@@ -1,7 +1,7 @@
 # github.com/boltdb/bolt v1.3.2-0.20180302180052-fd01fc79c553
 ## explicit
 github.com/boltdb/bolt
-# github.com/buger/jsonparser v0.0.0-20180318095312-2cac668e8456
+# github.com/buger/jsonparser v1.1.1
 ## explicit
 github.com/buger/jsonparser
 # github.com/getblank/blank-router v0.2.6
