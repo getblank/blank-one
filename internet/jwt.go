@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/buger/jsonparser"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 
 	"github.com/getblank/blank-one/sessions"
 )

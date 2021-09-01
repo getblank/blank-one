@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/getblank/blank-sr/bdb"
 	"github.com/getblank/blank-sr/berror"
 	"github.com/getblank/blank-sr/config"
 	"github.com/getblank/uuid"
+	"github.com/golang-jwt/jwt"
 	log "github.com/sirupsen/logrus"
 )
 

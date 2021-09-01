@@ -4,14 +4,11 @@ github.com/boltdb/bolt
 # github.com/buger/jsonparser v0.0.0-20180318095312-2cac668e8456
 ## explicit
 github.com/buger/jsonparser
-# github.com/dgrijalva/jwt-go v3.2.0+incompatible
-## explicit
-github.com/dgrijalva/jwt-go
 # github.com/getblank/blank-router v0.2.6
 ## explicit
 github.com/getblank/blank-router/berrors
 github.com/getblank/blank-router/taskq
-# github.com/getblank/blank-sr v0.1.37
+# github.com/getblank/blank-sr v0.1.38
 ## explicit
 github.com/getblank/blank-sr/bdb
 github.com/getblank/blank-sr/berror
@@ -40,6 +37,9 @@ github.com/globalsign/mgo/internal/scram
 ## explicit
 github.com/go-chi/chi
 github.com/go-chi/chi/middleware
+# github.com/golang-jwt/jwt v3.2.2+incompatible
+## explicit
+github.com/golang-jwt/jwt
 # github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3
 ## explicit
 github.com/jinzhu/copier
@@ -58,8 +58,7 @@ github.com/pkg/errors
 # github.com/robfig/cron v1.0.1-0.20171101201047-2315d5715e36
 ## explicit
 github.com/robfig/cron
-# github.com/sirupsen/logrus v1.0.6-0.20180329225952-778f2e774c72
-## explicit
+# github.com/sirupsen/logrus v1.8.1
 github.com/sirupsen/logrus
 # go.uber.org/atomic v1.3.1
 ## explicit
@@ -77,12 +76,11 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 # golang.org/x/crypto v0.0.0-20180403160946-b2aa35443fbc
 ## explicit
-golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20180406214816-61147c48b25b
 ## explicit
 golang.org/x/net/websocket
-# golang.org/x/sys v0.0.0-20180406135729-3b87a42e500a
-## explicit
+# golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/tools v0.0.0-20180401165715-ac136b6c2db7
