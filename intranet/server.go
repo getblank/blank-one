@@ -285,7 +285,7 @@ func sessionNewHandler(c *wango.Conn, uri string, args ...interface{}) (interfac
 	return sessions.NewSession(user, "")
 }
 
-func chechErrorAndPanic(err error) {
+func checkErrorAndPanic(err error) {
 	if err != nil {
 		panic(err)
 	}
@@ -302,15 +302,15 @@ func runServer() {
 		runMigrationScripts(c)
 	})
 
-	chechErrorAndPanic(wampServer.RegisterRPCHandler(getTaskURI, taskGetHandler))
-	chechErrorAndPanic(wampServer.RegisterRPCHandler(doneTaskURI, taskDoneHandler))
-	chechErrorAndPanic(wampServer.RegisterRPCHandler(errorTaskURI, taskErrorHandler))
-	chechErrorAndPanic(wampServer.RegisterRPCHandler(publishURI, publishHandler))
-	chechErrorAndPanic(wampServer.RegisterRPCHandler(cronRunURI, cronRunHandler))
+	checkErrorAndPanic(wampServer.RegisterRPCHandler(getTaskURI, taskGetHandler))
+	checkErrorAndPanic(wampServer.RegisterRPCHandler(doneTaskURI, taskDoneHandler))
+	checkErrorAndPanic(wampServer.RegisterRPCHandler(errorTaskURI, taskErrorHandler))
+	checkErrorAndPanic(wampServer.RegisterRPCHandler(publishURI, publishHandler))
+	checkErrorAndPanic(wampServer.RegisterRPCHandler(cronRunURI, cronRunHandler))
 
-	chechErrorAndPanic(wampServer.RegisterRPCHandler(rpcSessionNew, sessionNewHandler))
+	checkErrorAndPanic(wampServer.RegisterRPCHandler(rpcSessionNew, sessionNewHandler))
 
-	chechErrorAndPanic(wampServer.RegisterSubHandler(uriSubStores, subStoresHandler, nil, nil))
+	checkErrorAndPanic(wampServer.RegisterSubHandler(uriSubStores, subStoresHandler, nil, nil))
 
 	sr.Init(wampServer, srEventHandler)
 
@@ -327,11 +327,18 @@ func runServer() {
 		listeningPort = tqPort
 	}
 
+	wampServer.RegisterSubHandler("assets-update", func(c *wango.Conn, uri string, args ...interface{}) (interface{}, error) {
+		return nil, nil
+	}, nil, nil)
+
 	r := chi.NewRouter()
 	r.Handle("/", s)
 	if nodeEnv := os.Getenv("NODE_ENV"); nodeEnv == "DEV" {
 		r.Post("/config", appconfig.PostConfigHandler)
-		r.Post("/lib/lib.zip", appconfig.PostLibHandler)
+		r.Post("/lib/lib.zip", func(w http.ResponseWriter, r *http.Request) {
+			appconfig.PostLibHandler(w, r)
+			wampServer.Publish("assets-update", "lib.zip")
+		})
 		r.Post("/assets/assets.zip", appconfig.PostAssetsHandler)
 	}
 
