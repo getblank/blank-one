@@ -20,34 +20,6 @@ func createRESTAPI(httpEnabledStores []config.Store) {
 		return
 	}
 
-	t := taskq.Task{
-		Type:   taskq.DbAction,
-		Store:  "_serverSettings",
-		UserID: "root",
-		Arguments: map[string]interface{}{
-			"actionId": "restdoc",
-			"data":     httpEnabledStores,
-		},
-	}
-
-	res, err := taskq.PushAndGetResult(&t, 0)
-	if err != nil {
-		log.Errorf("Can't compile REST docs, error: %v", err)
-		return
-	}
-
-	html, ok := res.(string)
-	if !ok {
-		log.Error("Invalid response type from doc compiler")
-		return
-	}
-
-	r.Get(apiV1baseURI[:len(apiV1baseURI)-1], func(w http.ResponseWriter, r *http.Request) {
-		htmlResponse(w, html)
-	})
-
-	log.Info("REST API Documentation generated")
-
 	for _, store := range httpEnabledStores {
 		createRESTAPIForStore(store)
 	}
