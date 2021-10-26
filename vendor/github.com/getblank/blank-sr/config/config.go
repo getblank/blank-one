@@ -235,11 +235,11 @@ type Prop struct {
 	Query              interface{}     `json:"query,omitempty"`                       // Запрос для монги
 	ReadOnly           bool            `json:"readOnly,omitempty"`                    // Поле только для чтения
 	Required           interface{}     `json:"required,omitempty" ws:"yes"`           // Поле является обязательным
-	SearchBy           []string        `json:"searchBy,omitempty"`                    // Поля для поиска для элемента searchBox // TODO: сделать валидацию
+	SearchBy           []interface{}   `json:"searchBy,omitempty"`                    // Поля для поиска для элемента searchBox
 	SelectedTemplate   string          `json:"selectedTemplate,omitempty"`            // Шаблон выбранного элемента для searchBox
 	ShowAddAction      interface{}     `json:"showAddAction,omitempty"`               // Only for types:ref|refList
 	Sortable           bool            `json:"sortable,omitempty" ws:"yes"`           // Применимо только для ObjectList, перетаскивание
-	SortBy             string          `json:"sortBy,omitempty"`                      // Поля для сортировки, если пропа virtual // TODO: сделать валидацию
+	SortBy             string          `json:"sortBy,omitempty"`                      // Поля для сортировки, если пропа virtual
 	Store              string          `json:"store,omitempty"`                       // Имя сторы для поля типа ref
 	Style              bdb.M           `json:"style,omitempty" ws:"yes"`              // Внезапно: пока не определим нужный набор свойств отображения, прокину как я CSS
 	TableColumns       []interface{}   `json:"tableColumns,omitempty" ws:"yes"`       // Применимо только для VirtualRefList
@@ -253,24 +253,24 @@ type Prop struct {
 
 // Filter definition
 type Filter struct {
-	Default            string      `json:"default,omitempty" ws:"yes"`     // Function for setting default filter value, if filter resets, web app will set value to returned of this function
-	Display            string      `json:"display" ws:"yes"`               // textInput, searchBox, select, masked
-	ExtraQuery         interface{} `json:"extraQuery,omitempty"`           // Доп Запрос для СУБД
-	FilterBy           string      `json:"filterBy,omitempty"`             // display:searchBox Имя сторы для поля типа ref
-	FormOrder          int         `json:"formOrder,omitempty"`            // Порядок отображения на форме
-	HideOnStoreDisplay interface{} `json:"hideOnStoreDisplay,omitempty"`   // Useful to hide some filters on selected display types, type can be String or Array<String>
-	Hidden             interface{} `json:"hidden,omitempty" ws:"yes"`      // Hidden conditions, JavaScript expression
-	Label              string      `json:"label,omitempty" ws:"yes"`       // Вариации названий в браузере
-	Mask               string      `json:"mask,omitempty" ws:"yes"`        // display:masked Применимо только для строк
-	Multi              bool        `json:"multi" ws:"yes"`                 // display:searchBox Возможность выбора нескольких элементов
-	Options            []Value     `json:"options,omitempty"`              // display:select Перечень для селектов и прочего  // TODO: валидация
-	Placeholder        string      `json:"placeholder,omitempty" ws:"yes"` // Применимо для display:textInput
-	Query              interface{} `json:"query,omitempty"`                // Запрос для монги
-	SearchBy           []string    `json:"searchBy,omitempty"`             // display:searchBox Поля для поиска для элемента searchBox // TODO: сделать валидацию
-	Store              string      `json:"store,omitempty"`                // display:searchBox Имя сторы
-	Style              bdb.M       `json:"style,omitempty" ws:"yes"`       // CSS
-	Type               string      `json:"type,omitempty" ws:"yes"`        // Тип поля фильтра
-	UTC                bool        `json:"utc" ws:"yes"`                   // Флаг использования часовой зоны UTC при type: date
+	Default            string        `json:"default,omitempty" ws:"yes"`     // Function for setting default filter value, if filter resets, web app will set value to returned of this function
+	Display            string        `json:"display" ws:"yes"`               // textInput, searchBox, select, masked
+	ExtraQuery         interface{}   `json:"extraQuery,omitempty"`           // Доп Запрос для СУБД
+	FilterBy           string        `json:"filterBy,omitempty"`             // display:searchBox Имя сторы для поля типа ref
+	FormOrder          int           `json:"formOrder,omitempty"`            // Порядок отображения на форме
+	HideOnStoreDisplay interface{}   `json:"hideOnStoreDisplay,omitempty"`   // Useful to hide some filters on selected display types, type can be String or Array<String>
+	Hidden             interface{}   `json:"hidden,omitempty" ws:"yes"`      // Hidden conditions, JavaScript expression
+	Label              string        `json:"label,omitempty" ws:"yes"`       // Вариации названий в браузере
+	Mask               string        `json:"mask,omitempty" ws:"yes"`        // display:masked Применимо только для строк
+	Multi              bool          `json:"multi" ws:"yes"`                 // display:searchBox Возможность выбора нескольких элементов
+	Options            []Value       `json:"options,omitempty"`              // display:select Перечень для селектов и прочего  // TODO: валидация
+	Placeholder        string        `json:"placeholder,omitempty" ws:"yes"` // Применимо для display:textInput
+	Query              interface{}   `json:"query,omitempty"`                // Запрос для монги
+	SearchBy           []interface{} `json:"searchBy,omitempty"`             // display:searchBox Поля для поиска для элемента searchBox // TODO: сделать валидацию
+	Store              string        `json:"store,omitempty"`                // display:searchBox Имя сторы
+	Style              bdb.M         `json:"style,omitempty" ws:"yes"`       // CSS
+	Type               string        `json:"type,omitempty" ws:"yes"`        // Тип поля фильтра
+	UTC                bool          `json:"utc" ws:"yes"`                   // Флаг использования часовой зоны UTC при type: date
 }
 
 // HTTPHook definition

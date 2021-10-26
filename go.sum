@@ -16,6 +16,10 @@ github.com/getblank/blank-sr v0.1.37 h1:D+faJsgG6z1RZLWqBxvR0UuHCKXASXgmXSigH2iC
 github.com/getblank/blank-sr v0.1.37/go.mod h1:2UcwASKl8tMv1aM4iQuui54gykGDXcTbwYjbaVjRTkw=
 github.com/getblank/blank-sr v0.1.38 h1:un291LZ8O0tx11oQifSUqZILxKnF6FboRM+QVPbNd3U=
 github.com/getblank/blank-sr v0.1.38/go.mod h1:2ol5qsQzicjWG4Dgp/VGtO43NyrpZAFqHF89CRQIE40=
+github.com/getblank/blank-sr v0.1.39 h1:EM+bOy2RBvv5ByCdgvOgpyuIRJ52peU01n9oUqgfN/A=
+github.com/getblank/blank-sr v0.1.39/go.mod h1:2ol5qsQzicjWG4Dgp/VGtO43NyrpZAFqHF89CRQIE40=
+github.com/getblank/blank-sr v0.1.40 h1:kgFd5aRVKeogJEmDDnzFXj1bqbeXcjuxeyYTL7/niJU=
+github.com/getblank/blank-sr v0.1.40/go.mod h1:2ol5qsQzicjWG4Dgp/VGtO43NyrpZAFqHF89CRQIE40=
 github.com/getblank/rgx v0.0.0-20160518104151-4794b47be0bc h1:AS/g+RK/ZlOz/pWppesAFQj4oIUdnsNhqCJhuxLzZkI=
 github.com/getblank/rgx v0.0.0-20160518104151-4794b47be0bc/go.mod h1:3TVOlV5Y0eD/8x2iNpKtRTJv5iB+B4juAJGj4vrfJBM=
 github.com/getblank/uuid v0.0.0-20160519113122-af8bcd064446 h1:pqAb9q9WI7gYqAdHDVqJHT1XjnHDH7P4bUMW309Vpng=

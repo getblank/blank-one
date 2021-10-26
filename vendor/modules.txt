@@ -8,7 +8,7 @@ github.com/buger/jsonparser
 ## explicit
 github.com/getblank/blank-router/berrors
 github.com/getblank/blank-router/taskq
-# github.com/getblank/blank-sr v0.1.38
+# github.com/getblank/blank-sr v0.1.40
 ## explicit
 github.com/getblank/blank-sr/bdb
 github.com/getblank/blank-sr/berror
