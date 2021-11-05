@@ -2,6 +2,7 @@ package registry
 
 import (
 	"fmt"
+	"os"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -43,20 +44,16 @@ type RegisterMessage struct {
 
 // FSAddress returns File Storage address if exists or empty string
 func FSAddress() string {
-	locker.RLock()
-	defer locker.RUnlock()
-
-	for k, v := range services {
-		if k == TypeFileStore {
-			if len(v) == 0 {
-				return ""
-			}
-
-			return fmt.Sprintf("%s:%s", v[0].Address, v[0].Port)
-		}
+	host := os.Getenv("BLANK_FILE_STORE_HOST")
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	port := os.Getenv("BLANK_FILE_STORE_PORT")
+	if port == "" {
+		port = "8082"
 	}
 
-	return ""
+	return fmt.Sprintf("http://%s:%s", host, port)
 }
 
 // GetAll returns all services from registry
