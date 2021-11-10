@@ -8,6 +8,7 @@ script:
 after_success:
   - go build -o blank-one-linux-amd64 -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
   - GOOS=darwin GOARCH=amd64 go build -o blank-one-darwin-amd64 -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
+  - GOOS=darwin GOARCH=arm64 go build -o blank-one-darwin-arm64 -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
   - GOOS=windows GOARCH=amd64 go build -o blank-one-win32-amd64.exe -ldflags "-X main.buildTime=`date +%Y-%m-%d:%H:%M:%S` -X main.gitHash=`git rev-parse --short HEAD`"
 
 deploy:
@@ -16,6 +17,7 @@ deploy:
   file:
     - blank-one-linux-amd64
     - blank-one-darwin-amd64
+    - blank-one-darwin-arm64
     - blank-one-win32-amd64.exe
   skip_cleanup: true
   on:
