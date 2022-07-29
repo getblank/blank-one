@@ -313,8 +313,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, accessTokenCookie)
 
 	result := map[string]interface{}{
-		"access_token": accessToken,
-		"user":         user,
+		"user": user,
 	}
 
 	jsonResponse(w, result)
